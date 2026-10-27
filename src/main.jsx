@@ -138,7 +138,77 @@ function Students({students,query,setQuery,canManage,isA,setShowStudentForm}) {r
 function Attendance({students}) {const [marked,setMarked]=useState({});return <><PageTitle eyebrow="TRAINING RECORDS" title="Attendance." description="Mark attendance for your current training session." action={<div className="today-chip"><CalendarDays size={16}/>{new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>}/><div className="attendance-banner"><ClipboardCheck size={24}/><div><b>Training attendance</b><p>Triprayar Dojo · Karate · Today’s session</p></div><span>{Object.values(marked).filter(Boolean).length}/{students.length} present</span></div><div className="panel"><div className="panel-toolbar"><div><h2>Member roll call</h2><p>Tap a status to mark attendance in this preview.</p></div><span className="demo-tag">LOCAL PREVIEW</span></div><div className="attendance-list">{students.map(s=><div className="attendance-row" key={s.id}><div className="member-cell"><span className="member-avatar">{s.name.split(' ').map(x=>x[0]).join('').replace('.','').slice(0,2)}</span><div><b>{s.name}</b><small>{s.id} · {s.belt}</small></div></div><button className={`attendance-toggle ${marked[s.id]?'present':''}`} onClick={()=>setMarked({...marked,[s.id]:!marked[s.id]})}>{marked[s.id]?<><Check size={15}/> Present</>:'Mark present'}</button></div>)}</div></div></>}
 function Events({events,eventType,setEventType,canManage,setShowEventForm}) {return <><PageTitle eyebrow="ASSOCIATION CALENDAR" title="Events & training." description="Separate event settings for Karate and Kick boxing." action={canManage&&<button className="btn primary" onClick={()=>setShowEventForm(true)}><Plus size={16}/> New event</button>}/><div className="event-controls"><div className="segmented">{['All','Karate','Kick boxing'].map(t=><button key={t} className={eventType===t?'selected':''} onClick={()=>setEventType(t)}>{t==='All'?'All events':t}</button>)}</div><div className="event-settings-note"><Settings size={16}/><span>Each event has its own discipline and settings.</span></div></div><div className="event-grid large">{events.map(e=><EventCard key={e.id} event={e}/>)}</div>{events.length===0&&<div className="empty-state panel">No events in this category yet.</div>}</>}
 function Dojos({isA,canManage}) {const [show,setShow]=useState(false);const [name,setName]=useState('');const [dojos,setDojos]=useState([{name:'Triprayar Dojo',place:'Triprayar, Kerala',members:2,lead:'Sensei R.'},{name:'Thrissur Central',place:'Thrissur, Kerala',members:1,lead:'Senpai Sanjay'},{name:'Main Dojo',place:'Association HQ',members:0,lead:'Association office'}]);return <><PageTitle eyebrow="ASSOCIATION LOCATIONS" title="Our dojos." description="Training locations and the instructors who guide each team." action={isA&&<button className="btn primary" onClick={()=>setShow(true)}><Plus size={16}/> New dojo</button>}/>{show&&<form className="inline-add" onSubmit={e=>{e.preventDefault();if(name.trim()){setDojos([...dojos,{name,place:'Location to be updated',members:0,lead:'To be assigned'}]);setName('');setShow(false)}}}><input placeholder="New dojo name" value={name} onChange={e=>setName(e.target.value)} required/><button className="btn primary">Add dojo</button><button type="button" className="btn secondary" onClick={()=>setShow(false)}>Cancel</button></form>}<div className="dojo-grid">{dojos.map((d,i)=><article className="dojo-card" key={d.name}><div className="dojo-card-top"><div className="dojo-icon"><Building2 size={22}/></div><span className="dojo-number">DOJO / 0{i+1}</span></div><h2>{d.name}</h2><p><MapPin size={15}/>{d.place}</p><div className="dojo-details"><div><small>MEMBERS</small><b>{d.members.toString().padStart(2,'0')}</b></div><div><small>INSTRUCTOR</small><b>{d.lead}</b></div></div><div className="dojo-foot"><span><i/> Listed dojo</span>{canManage&&<span className="access-chip">{isA?'Manage':'View only'}</span>}</div></article>)}</div></>}
-function Control({isA,students}) {return <><PageTitle eyebrow="ADMINISTRATION" title="Control panel." description={isA?'A Level has full administrative control over association access and settings.':'B Level can add and view member IDs, but cannot change access permissions.'}/><div className="control-alert"><Shield size={20}/><div><b>{isA?'A Level · Full control':'B Level · Limited control'}</b><p>{isA?'Manage role permissions, member access, dojo records and event configuration.':'You can manage student profiles and view IDs. Only A Level can manage permissions and access levels.'}</p></div></div><div className="control-grid"><ControlTile icon={KeyRound} title="Login ID management" text="View association IDs and manage access requests." status={isA?'Full control':'View IDs'} /><ControlTile icon={Users} title="Member permissions" text="Assign Student, Senpai, Sensi and admin roles." status={isA?'Editable':'A Level only'} /><ControlTile icon={CalendarDays} title="Event configuration" text="Maintain independent Karate and Kick boxing event settings." status="Available" /><ControlTile icon={Building2} title="Dojo management" text="Create dojos and maintain location details." status={isA?'Full control':'View only'} /></div><div className="panel security-panel"><div className="security-icon"><CircleHelp size={20}/></div><div><h3>Production security required</h3><p>This preview does not enforce server-side permissions. Before publishing, connect a database and verify every role on the server. Never store real passcodes in browser storage.</p></div></div><div className="panel"><div className="panel-toolbar"><div><h2>Access overview</h2><p>Role capabilities planned for the production portal</p></div></div><div className="role-matrix"><div className="matrix-row matrix-head"><span>CAPABILITY</span><span>MEMBER</span><span>B LEVEL</span><span>A LEVEL</span></div>{[['View own profile','✓','✓','✓'],['View member IDs','—','✓','✓'],['Add student profiles','—','✓','✓'],['Create events','—','✓','✓'],['Manage dojos','—','Limited','✓'],['Change login roles','—','—','✓'],['Full association control','—','—','✓']].map(row=><div className="matrix-row" key={row[0]}>{row.map((v,i)=><span key={i} className={i===0?'matrix-label':''}>{v}</span>)}</div>)}</div></div></>}
+function Control({isA,students}) {
+  const [ids, setIds] = useState([
+    {id:'WWMAA-ADMIN-001',name:'Association Administrator',role:'A Level',status:'Active'},
+    {id:'WW-1001',name:'Arjun K.',role:'Student',status:'Active'},
+    {id:'SN-0201',name:'Sanjay P.',role:'Senpai',status:'Active'}
+  ])
+  const [idForm, setIdForm] = useState({id:'',name:'',role:'Student'})
+  const [saved, setSaved] = useState('')
+  const [karateSettings, setKarateSettings] = useState({attendance:true,registration:true,results:false})
+  const [kickSettings, setKickSettings] = useState({attendance:true,registration:true,results:false})
+  const [activeSettings, setActiveSettings] = useState('Karate')
+  const [showIdForm, setShowIdForm] = useState(false)
+  const [searchId, setSearchId] = useState('')
+  const [editingRole, setEditingRole] = useState(null)
+  const [editingRoleValue, setEditingRoleValue] = useState('Student')
+  const shownIds = ids.filter(x => (x.id+' '+x.name+' '+x.role).toLowerCase().includes(searchId.toLowerCase()))
+  const settings = activeSettings === 'Karate' ? karateSettings : kickSettings
+  const setSettings = activeSettings === 'Karate' ? setKarateSettings : setKickSettings
+  function addLogin(e) {
+    e.preventDefault()
+    if (!isA || !idForm.id.trim() || !idForm.name.trim()) return
+    if (ids.some(x => x.id.toLowerCase() === idForm.id.trim().toLowerCase())) {
+      setSaved('That login ID already exists.')
+      return
+    }
+    setIds(prev => [...prev, {...idForm, id:idForm.id.trim().toUpperCase(), status:'Active'}])
+    setIdForm({id:'',name:'',role:'Student'})
+    setShowIdForm(false)
+    setSaved('Login ID created in this browser preview.')
+  }
+  function saveRole(id) {
+    if (!isA) return
+    setIds(prev => prev.map(x => x.id === id ? {...x, role:editingRoleValue} : x))
+    setEditingRole(null)
+    setSaved('Access level updated in this browser preview.')
+  }
+  return <>
+    <PageTitle eyebrow="ADMINISTRATION" title="Control panel." description={isA?'A Level: manage login IDs, roles and independent event settings.':'B Level: view login IDs and adjust event settings; only A Level can create IDs or change roles.'}/>
+    <div className="control-alert"><Shield size={20}/><div><b>{isA?'A Level · Full control':'B Level · Limited control'}</b><p>{isA?'Create login IDs, assign access levels, configure Karate and Kick boxing events, and manage association settings.':'You can view login IDs and configure event settings. ID creation and role changes are reserved for A Level.'}</p></div></div>
+    {saved && <div className="notice"><Check size={16}/>{saved}<button onClick={()=>setSaved('')}><X size={15}/></button></div>}
+    <div className="control-grid">
+      <ControlTile icon={KeyRound} title="Login ID management" text="Create and review member login IDs." status={isA?'Create + view':'View only'} />
+      <ControlTile icon={Users} title="Access roles" text="Assign Student, Senpai, Sensi, B Level or A Level." status={isA?'Editable':'A Level only'} />
+      <ControlTile icon={CalendarDays} title="Event configuration" text="Maintain independent Karate and Kick boxing settings." status="Interactive" />
+      <ControlTile icon={Building2} title="Association settings" text="Control member access and event registration options." status={isA?'Full control':'Limited'} />
+    </div>
+    <div className="panel control-section">
+      <div className="panel-toolbar"><div><h2>Login ID manager</h2><p>{shownIds.length} IDs in this preview. B Level can view; A Level can create and assign roles.</p></div>{isA&&<button className="btn primary" onClick={()=>setShowIdForm(!showIdForm)}><Plus size={16}/>{showIdForm?'Close form':'Create login ID'}</button>}</div>
+      {showIdForm && isA && <form className="form-grid control-form" onSubmit={addLogin}>
+        <label>Login ID<input required value={idForm.id} onChange={e=>setIdForm({...idForm,id:e.target.value})} placeholder="WW-1005"/></label>
+        <label>Member name<input required value={idForm.name} onChange={e=>setIdForm({...idForm,name:e.target.value})} placeholder="Full name"/></label>
+        <label>Access role<select value={idForm.role} onChange={e=>setIdForm({...idForm,role:e.target.value})}>{['Student','Senpai','Sensi','B Level','A Level'].map(x=><option key={x}>{x}</option>)}</select></label>
+        <div className="form-actions"><button className="btn primary"><Plus size={16}/> Create ID</button></div>
+      </form>}
+      <div className="panel-toolbar id-search-toolbar"><div className="search-box"><Search size={17}/><input value={searchId} onChange={e=>setSearchId(e.target.value)} placeholder="Search login IDs..."/></div><span className="demo-tag">BROWSER PREVIEW</span></div>
+      <div className="table-wrap"><table><thead><tr><th>MEMBER</th><th>LOGIN ID</th><th>ACCESS ROLE</th><th>STATUS</th>{isA&&<th>ACTIONS</th>}</tr></thead><tbody>{shownIds.map(x=><tr key={x.id}><td>{x.name}</td><td><span className="id-chip">{x.id}</span></td><td>{editingRole===x.id&&isA?<select className="table-select" value={editingRoleValue} onChange={e=>setEditingRoleValue(e.target.value)}>{['Student','Senpai','Sensi','B Level','A Level'].map(r=><option key={r}>{r}</option>)}</select>:<span className="access-chip">{x.role}</span>}</td><td><span className="event-status"><i/>{x.status}</span></td>{isA&&<td>{editingRole===x.id?<div className="row-actions"><button className="text-btn" onClick={()=>saveRole(x.id)}>Save</button><button className="text-btn muted" onClick={()=>setEditingRole(null)}>Cancel</button></div>:<button className="text-btn" onClick={()=>{setEditingRole(x.id);setEditingRoleValue(x.role)}}><Pencil size={13}/> Edit role</button>}</td>}</tr>)}</tbody></table>{shownIds.length===0&&<div className="empty-state">No login IDs match your search.</div>}</div>
+    </div>
+    <div className="panel control-section">
+      <div className="panel-toolbar"><div><h2>Event settings</h2><p>Karate and Kick boxing settings are independent.</p></div><Settings size={19} color="#e3545f"/></div>
+      <div className="event-settings-body">
+        <div className="segmented"><button className={activeSettings==='Karate'?'selected':''} onClick={()=>setActiveSettings('Karate')}>Karate</button><button className={activeSettings==='Kick boxing'?'selected':''} onClick={()=>setActiveSettings('Kick boxing')}>Kick boxing</button></div>
+        <div className="settings-list">
+          {[['attendance','Attendance tracking','Allow instructors to mark member attendance.'],['registration','Event registration','Allow members to register for this event type.'],['results','Results and grading','Enable results / grading records for this discipline.']].map(([key,title,desc])=><label className="setting-row" key={key}><span><b>{title}</b><small>{desc}</small></span><button type="button" role="switch" aria-checked={settings[key]} className={`switch ${settings[key]?'on':''}`} onClick={()=>setSettings(prev=>({...prev,[key]:!prev[key]}))}><i/></button></label>)}
+        </div>
+        <div className="settings-save-row"><span>Changes apply to <b>{activeSettings}</b> in this browser preview.</span><button className="btn primary" onClick={()=>setSaved(`${activeSettings} settings saved in this browser preview.`)}><Check size={15}/> Save settings</button></div>
+      </div>
+    </div>
+    <div className="panel security-panel"><div className="security-icon"><CircleHelp size={20}/></div><div><h3>Before public launch</h3><p>This ZIP is a frontend prototype. Changes are local to the browser and are not shared across devices. Real account authentication, password hashing, database storage and server-side A/B permissions must be added before using real member information.</p></div></div>
+    <div className="panel"><div className="panel-toolbar"><div><h2>Access overview</h2><p>Planned capabilities by role</p></div></div><div className="role-matrix"><div className="matrix-row matrix-head"><span>CAPABILITY</span><span>MEMBER</span><span>B LEVEL</span><span>A LEVEL</span></div>{[['View member IDs','—','✓','✓'],['Create login IDs','—','—','✓'],['Change login roles','—','—','✓'],['Configure event settings','—','✓','✓'],['Full association control','—','—','✓']].map(row=><div className="matrix-row" key={row[0]}>{row.map((v,i)=><span key={i} className={i===0?'matrix-label':''}>{v}</span>)}</div>)}</div></div>
+  </>
+}
 function ControlTile({icon:Icon,title,text,status}) {return <div className="control-tile"><div className="control-tile-icon"><Icon size={19}/></div><div><h3>{title}</h3><p>{text}</p><span className="access-chip">{status}</span></div></div>}
 function Modal({title,close,children}) {return <div className="modal-backdrop" onMouseDown={e=>e.target===e.currentTarget&&close()}><div className="modal"><div className="modal-head"><div><div className="eyebrow">ASSOCIATION PORTAL</div><h2>{title}</h2></div><button className="icon-btn" onClick={close}><X size={19}/></button></div>{children}</div></div>}
 

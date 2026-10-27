@@ -17,3 +17,11 @@ This ZIP is a frontend prototype. It uses browser local storage for demonstratio
 
 ## Login prototype
 For preview only, the sign-in screen accepts any non-empty ID and any non-empty passcode. Use the role selector to preview Student/Senpai/Sensi, B Level, or A Level screens. This is not real authentication.
+
+
+## V2 updates
+- Fixed/expanded the Control Panel with an interactive Login ID Manager.
+- A Level can create IDs and edit roles; B Level can view IDs.
+- Added separate independent settings panels for Karate and Kick boxing.
+- Added event-setting toggles for attendance, registration, and results/grading.
+- Settings and IDs are demo-only and stay in the current browser session; they are not synced to a database.
