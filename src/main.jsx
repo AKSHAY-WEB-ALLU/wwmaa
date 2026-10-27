@@ -6,6 +6,7 @@ import {
   Building2, Eye, Pencil, KeyRound, CircleHelp, Check, Clock3
 } from 'lucide-react'
 import './styles.css'
+import userDirectory from './users.json'
 
 const initialStudents = [
   { id: 'WW-1001', name: 'Arjun K.', dojo: 'Triprayar Dojo', belt: 'Green Belt', role: 'Student', style: 'Karate' },
@@ -44,7 +45,7 @@ function App() {
   const role = session?.role || 'Student / Senpai / Sensi'
   const isA = role === 'A Level'
   const isB = role === 'B Level'
-  const canManage = isA || isB
+  const canManage = isA
   const canManageEverything = isA || isB
   const filteredStudents = useMemo(() => students.filter(s => `${s.name} ${s.id} ${s.dojo} ${s.belt}`.toLowerCase().includes(query.toLowerCase())), [students, query])
   const filteredEvents = useMemo(() => events.filter(e => eventType === 'All' || e.type === eventType), [events, eventType])
@@ -88,7 +89,7 @@ function App() {
       </div>
       <div className="association-tag"><span className="red-dot"/> WORLD WIDE MARTIAL ARTS ASSOCIATION</div>
       <div className="nav-label">WORKSPACE</div>
-      <nav>{navItems.filter(([label]) => (label !== 'Control panel' || canManage) && (session.loginMode !== 'student' || ['Overview','Student details','Attendance','Upcoming events','Dojos'].includes(label))).map(([label, key, Icon]) =>
+      <nav>{navItems.filter(([label]) => (label !== 'Control panel' || canManageEverything) && (session.loginMode !== 'student' || ['Overview','Student details','Attendance','Upcoming events','Dojos'].includes(label))).map(([label, key, Icon]) =>
         <button key={key} className={`nav-link ${active === key ? 'active' : ''}`} onClick={() => {setActive(key);setMobileNav(false)}}>
           <Icon size={18}/><span>{label}</span>{active === key && <ChevronRight size={15} className="nav-chevron"/>}
         </button>
@@ -153,77 +154,64 @@ function Attendance({students}) {const [marked,setMarked]=useState({});return <>
 function Events({events,eventType,setEventType,canManage,setShowEventForm}) {return <><PageTitle eyebrow="ASSOCIATION CALENDAR" title="Events & training." description="Separate event settings for Karate and Kick boxing." action={canManage&&<button className="btn primary" onClick={()=>setShowEventForm(true)}><Plus size={16}/> New event</button>}/><div className="event-controls"><div className="segmented">{['All','Karate','Kick boxing'].map(t=><button key={t} className={eventType===t?'selected':''} onClick={()=>setEventType(t)}>{t==='All'?'All events':t}</button>)}</div><div className="event-settings-note"><Settings size={16}/><span>Each event has its own discipline and settings.</span></div></div><div className="event-grid large">{events.map(e=><EventCard key={e.id} event={e}/>)}</div>{events.length===0&&<div className="empty-state panel">No events in this category yet.</div>}</>}
 function Dojos({isA,canManage}) {const [show,setShow]=useState(false);const [name,setName]=useState('');const [dojos,setDojos]=useState([{name:'Triprayar Dojo',place:'Triprayar, Kerala',members:2,lead:'Sensei R.'},{name:'Thrissur Central',place:'Thrissur, Kerala',members:1,lead:'Senpai Sanjay'},{name:'Main Dojo',place:'Association HQ',members:0,lead:'Association office'}]);return <><PageTitle eyebrow="ASSOCIATION LOCATIONS" title="Our dojos." description="Training locations and the instructors who guide each team." action={isA&&<button className="btn primary" onClick={()=>setShow(true)}><Plus size={16}/> New dojo</button>}/>{show&&<form className="inline-add" onSubmit={e=>{e.preventDefault();if(name.trim()){setDojos([...dojos,{name,place:'Location to be updated',members:0,lead:'To be assigned'}]);setName('');setShow(false)}}}><input placeholder="New dojo name" value={name} onChange={e=>setName(e.target.value)} required/><button className="btn primary">Add dojo</button><button type="button" className="btn secondary" onClick={()=>setShow(false)}>Cancel</button></form>}<div className="dojo-grid">{dojos.map((d,i)=><article className="dojo-card" key={d.name}><div className="dojo-card-top"><div className="dojo-icon"><Building2 size={22}/></div><span className="dojo-number">DOJO / 0{i+1}</span></div><h2>{d.name}</h2><p><MapPin size={15}/>{d.place}</p><div className="dojo-details"><div><small>MEMBERS</small><b>{d.members.toString().padStart(2,'0')}</b></div><div><small>INSTRUCTOR</small><b>{d.lead}</b></div></div><div className="dojo-foot"><span><i/> Listed dojo</span>{canManage&&<span className="access-chip">{isA?'Manage':'View only'}</span>}</div></article>)}</div></>}
 function Control({isA,isB,students}) {
-  const [ids, setIds] = useState([
-    {id:'WWMAA-ADMIN-001',name:'Association Administrator',role:'A Level',status:'Active',passwordSet:true},
-    {id:'WW-1001',name:'Arjun K.',role:'Student',status:'Active',passwordSet:true},
-    {id:'SN-0201',name:'Sanjay P.',role:'Senpai',status:'Active',passwordSet:false}
-  ])
-  const [passwordTarget, setPasswordTarget] = useState(null)
-  const [temporaryPassword, setTemporaryPassword] = useState('')
-  const [idForm, setIdForm] = useState({id:'',name:'',role:'Student'})
-  const [saved, setSaved] = useState('')
-  const [karateSettings, setKarateSettings] = useState({attendance:true,registration:true,results:false})
-  const [kickSettings, setKickSettings] = useState({attendance:true,registration:true,results:false})
-  const [activeSettings, setActiveSettings] = useState('Karate')
-  const [showIdForm, setShowIdForm] = useState(false)
+  const [ids, setIds] = useState(userDirectory.users)
   const [searchId, setSearchId] = useState('')
-  const [editingRole, setEditingRole] = useState(null)
-  const [editingRoleValue, setEditingRoleValue] = useState('Student')
+  const [showForm, setShowForm] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [saved, setSaved] = useState('')
+  const [form, setForm] = useState({id:'',name:'',role:'Student',dojo:'Triprayar Dojo',belt:'White Belt',password:''})
   const shownIds = ids.filter(x => (x.id+' '+x.name+' '+x.role).toLowerCase().includes(searchId.toLowerCase()))
-  const settings = activeSettings === 'Karate' ? karateSettings : kickSettings
-  const setSettings = activeSettings === 'Karate' ? setKarateSettings : setKickSettings
-  function addLogin(e) {
-    e.preventDefault()
-    if (!(isA||isB) || !idForm.id.trim() || !idForm.name.trim()) return
-    if (ids.some(x => x.id.toLowerCase() === idForm.id.trim().toLowerCase())) {
-      setSaved('That login ID already exists.')
-      return
-    }
-    setIds(prev => [...prev, {...idForm, id:idForm.id.trim().toUpperCase(), status:'Active', passwordSet:false}])
-    setIdForm({id:'',name:'',role:'Student'})
-    setShowIdForm(false)
-    setSaved('Login ID created in this browser preview.')
+  const canEdit = (account) => isA || (isB && account.role === 'Senpai')
+  function beginEdit(account) {
+    if (!canEdit(account)) return
+    setEditing(account.id)
+    setForm({...account, password:''})
   }
-  function saveRole(id) {
-    if (!(isA||isB)) return
-    setIds(prev => prev.map(x => x.id === id ? {...x, role:editingRoleValue} : x))
-    setEditingRole(null)
-    setSaved('Access level updated in this browser preview.')
+  function saveAccount(e) {
+    e.preventDefault()
+    if (!form.id.trim() || !form.name.trim()) return
+    if (editing) {
+      const target = ids.find(x => x.id === editing)
+      if (!target || !canEdit(target)) return
+      if (ids.some(x => x.id.toLowerCase() === form.id.trim().toLowerCase() && x.id !== editing)) {
+        setSaved('That login ID already exists.'); return
+      }
+      setIds(prev => prev.map(x => x.id === editing ? {...x, ...form, id:form.id.trim().toUpperCase(), passwordSet: form.password ? true : x.passwordSet} : x))
+      setSaved(form.password ? 'Account details saved and new password set in this browser preview.' : 'Account details saved in this browser preview.')
+    } else {
+      if (!isA) return
+      if (ids.some(x => x.id.toLowerCase() === form.id.trim().toLowerCase())) { setSaved('That login ID already exists.'); return }
+      setIds(prev => [...prev, {...form, id:form.id.trim().toUpperCase(), status:'Active', passwordSet:!!form.password}])
+      setSaved('Account created in this browser preview.')
+    }
+    setEditing(null); setShowForm(false)
+    setForm({id:'',name:'',role:'Student',dojo:'Triprayar Dojo',belt:'White Belt',password:''})
+  }
+  function removeAccount(account) {
+    if (!isA || account.role === 'A Level' && account.id === 'WWMAA-ADMIN-001') return
+    setIds(prev => prev.filter(x => x.id !== account.id))
+    setSaved('Account removed in this browser preview.')
   }
   return <>
-    <PageTitle eyebrow="ADMINISTRATION" title="Control panel." description="A Level and B Level have full administrative control over member IDs, roles, events, dojos and association settings." />
-    <div className="control-alert"><Shield size={20}/><div><b>{isA?'A Level · Full control':'B Level · Full control'}</b><p>Both A Level and B Level can create login IDs, assign member roles, add and edit students, manage dojos, create events and configure all association settings. Passwords remain private and cannot be viewed by either admin level.</p></div></div>
+    <PageTitle eyebrow="ADMINISTRATION" title="User control panel." description={isA ? 'A Level can manage every user and administrator account, IDs, roles and password resets.' : 'B Level access is limited to editing Senpai accounts only.'} />
+    <div className="control-alert"><Shield size={20}/><div><b>{isA?'A Level · Full user control':'B Level · Senpai-only editing'}</b><p>{isA?'Edit all member and admin details, create accounts, change login IDs and roles, and set a new password when required. Existing passwords are never shown.':'You can edit Senpai account details only. Other members and administrator accounts are read-only. You cannot create admin accounts or change roles.'}</p></div></div>
     {saved && <div className="notice"><Check size={16}/>{saved}<button onClick={()=>setSaved('')}><X size={15}/></button></div>}
-    <div className="control-grid">
-      <ControlTile icon={KeyRound} title="Login ID management" text="Create and review member login IDs. Passwords are never displayed." status="Create + view + manage"  />
-      <ControlTile icon={Users} title="Access roles" text="Assign Student, Senpai, Sensi, B Level or A Level." status="Editable"  />
-      <ControlTile icon={CalendarDays} title="Event configuration" text="Maintain independent Karate and Kick boxing settings." status="Interactive" />
-      <ControlTile icon={Building2} title="Association settings" text="Control member access and event registration options." status="Full control"  />
-    </div>
     <div className="panel control-section">
-      <div className="panel-toolbar"><div><h2>Login ID manager</h2><p>{shownIds.length} IDs in this preview. Both A Level and B Level can create IDs and assign roles.</p></div>{(isA||isB)&&<button className="btn primary" onClick={()=>setShowIdForm(!showIdForm)}><Plus size={16}/>{showIdForm?'Close form':'Create login ID'}</button>}</div>
-      {showIdForm && (isA||isB) && <form className="form-grid control-form" onSubmit={addLogin}>
-        <label>Login ID<input required value={idForm.id} onChange={e=>setIdForm({...idForm,id:e.target.value})} placeholder="WW-1005"/></label>
-        <label>Member name<input required value={idForm.name} onChange={e=>setIdForm({...idForm,name:e.target.value})} placeholder="Full name"/></label>
-        <label>Access role<select value={idForm.role} onChange={e=>setIdForm({...idForm,role:e.target.value})}>{['Student','Senpai','Sensi','B Level','A Level'].map(x=><option key={x}>{x}</option>)}</select></label>
-        <div className="form-actions"><button className="btn primary"><Plus size={16}/> Create ID</button></div>
+      <div className="panel-toolbar"><div><h2>All user accounts</h2><p>{shownIds.length} accounts · user records start from <code>src/users.json</code></p></div>{isA&&<button className="btn primary" onClick={()=>{setEditing(null);setForm({id:'',name:'',role:'Student',dojo:'Triprayar Dojo',belt:'White Belt',password:''});setShowForm(!showForm)}}><Plus size={16}/>{showForm?'Close form':'Create account'}</button>}</div>
+      {(showForm || editing) && <form className="form-grid control-form" onSubmit={saveAccount}>
+        <label>Login ID<input required value={form.id} onChange={e=>setForm({...form,id:e.target.value})} placeholder="WW-1005" disabled={!!editing && isB}/></label>
+        <label>Full name<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Full name"/></label>
+        <label>Role<select value={form.role} disabled={isB} onChange={e=>setForm({...form,role:e.target.value})}>{['Student','Senpai','Sensi','B Level','A Level'].map(r=><option key={r}>{r}</option>)}</select></label>
+        <label>Dojo<input value={form.dojo||''} onChange={e=>setForm({...form,dojo:e.target.value})}/></label>
+        <label>Belt<input value={form.belt||''} onChange={e=>setForm({...form,belt:e.target.value})}/></label>
+        {isA && <label>{editing?'Set new password (optional)':'Initial password'}<input type="password" value={form.password||''} onChange={e=>setForm({...form,password:e.target.value})} placeholder={editing?'Leave blank to keep unchanged':'Set initial password'} autoComplete="new-password"/></label>}
+        <div className="form-actions"><button type="button" className="btn secondary" onClick={()=>{setEditing(null);setShowForm(false)}}>Cancel</button><button className="btn primary"><Check size={16}/>{editing?'Save account':'Create account'}</button></div>
       </form>}
-      <div className="panel-toolbar id-search-toolbar"><div className="search-box"><Search size={17}/><input value={searchId} onChange={e=>setSearchId(e.target.value)} placeholder="Search login IDs..."/></div><span className="demo-tag">BROWSER PREVIEW</span></div>
-      <div className="table-wrap"><table><thead><tr><th>MEMBER</th><th>LOGIN ID</th><th>ACCESS ROLE</th><th>STATUS</th><th>PASSWORD</th>{(isA||isB)&&<th>ACTIONS</th>}</tr></thead><tbody>{shownIds.map(x=><tr key={x.id}><td>{x.name}</td><td><span className="id-chip">{x.id}</span></td><td>{editingRole===x.id&&isA?<select className="table-select" value={editingRoleValue} onChange={e=>setEditingRoleValue(e.target.value)}>{['Student','Senpai','Sensi','B Level','A Level'].map(r=><option key={r}>{r}</option>)}</select>:<span className="access-chip">{x.role}</span>}</td><td><span className="event-status"><i/>{x.status}</span></td><td><span className="access-chip">{x.passwordSet?'Set':'Needs setup'}</span></td>{(isA||isB)&&<td>{editingRole===x.id?<div className="row-actions"><button className="text-btn" onClick={()=>saveRole(x.id)}>Save</button><button className="text-btn muted" onClick={()=>setEditingRole(null)}>Cancel</button></div>:<button className="text-btn" onClick={()=>{setEditingRole(x.id);setEditingRoleValue(x.role)}}><Pencil size={13}/> Edit role</button>}</td>}</tr>)}</tbody></table>{shownIds.length===0&&<div className="empty-state">No login IDs match your search.</div>}</div>
+      <div className="panel-toolbar id-search-toolbar"><div className="search-box"><Search size={17}/><input value={searchId} onChange={e=>setSearchId(e.target.value)} placeholder="Search name, ID, role..."/></div><span className="demo-tag">FRONTEND PREVIEW</span></div>
+      <div className="table-wrap"><table><thead><tr><th>NAME</th><th>LOGIN ID</th><th>ROLE</th><th>DOJO</th><th>BELT</th><th>PASSWORD</th><th>ACTIONS</th></tr></thead><tbody>{shownIds.map(x=><tr key={x.id}><td>{x.name}</td><td><span className="id-chip">{x.id}</span></td><td><span className="access-chip">{x.role}</span></td><td>{x.dojo||'—'}</td><td>{x.belt||'—'}</td><td><span className="access-chip">{x.passwordSet?'Set':'Not set'}</span></td><td>{canEdit(x)?<div className="row-actions"><button className="text-btn" onClick={()=>beginEdit(x)}><Pencil size={13}/> Edit</button>{isA&&<button className="text-btn muted" onClick={()=>removeAccount(x)}>Delete</button>}</div>:<span className="muted">View only</span>}</td></tr>)}</tbody></table>{shownIds.length===0&&<div className="empty-state">No accounts match your search.</div>}</div>
     </div>
-    <div className="panel control-section">
-      <div className="panel-toolbar"><div><h2>Event settings</h2><p>Karate and Kick boxing settings are independent.</p></div><Settings size={19} color="#e3545f"/></div>
-      <div className="event-settings-body">
-        <div className="segmented"><button className={activeSettings==='Karate'?'selected':''} onClick={()=>setActiveSettings('Karate')}>Karate</button><button className={activeSettings==='Kick boxing'?'selected':''} onClick={()=>setActiveSettings('Kick boxing')}>Kick boxing</button></div>
-        <div className="settings-list">
-          {[['attendance','Attendance tracking','Allow instructors to mark member attendance.'],['registration','Event registration','Allow members to register for this event type.'],['results','Results and grading','Enable results / grading records for this discipline.']].map(([key,title,desc])=><label className="setting-row" key={key}><span><b>{title}</b><small>{desc}</small></span><button type="button" role="switch" aria-checked={settings[key]} className={`switch ${settings[key]?'on':''}`} onClick={()=>setSettings(prev=>({...prev,[key]:!prev[key]}))}><i/></button></label>)}
-        </div>
-        <div className="settings-save-row"><span>Changes apply to <b>{activeSettings}</b> in this browser preview.</span><button className="btn primary" onClick={()=>setSaved(`${activeSettings} settings saved in this browser preview.`)}><Check size={15}/> Save settings</button></div>
-      </div>
-    </div>
-    <div className="panel security-panel"><div className="security-icon"><CircleHelp size={20}/></div><div><h3>Password privacy policy</h3><p>A Level and B Level cannot view, reveal, edit or reset member passwords. In production, store only salted password hashes and provide a secure self-service password-change flow for the account holder. A Level may disable an account or issue a one-time reset invitation without ever seeing the existing password.</p></div></div>
-    <div className="panel security-panel"><div className="security-icon"><Shield size={20}/></div><div><h3>Prototype security notice</h3><p>This is a visual frontend demo. The access rules shown here are not secure server-side enforcement and data is local to this browser. Do not use real member passwords until production authentication and database permissions are configured.</p></div></div>
-    <div className="panel"><div className="panel-toolbar"><div><h2>Access overview</h2><p>Planned capabilities by role</p></div></div><div className="role-matrix"><div className="matrix-row matrix-head"><span>CAPABILITY</span><span>MEMBER</span><span>B LEVEL</span><span>A LEVEL</span></div>{[['View member IDs','—','✓','✓'],['Create login IDs','—','✓','✓'],['Change login roles','—','✓','✓'],['Add/edit students and dojos','—','✓','✓'],['Configure event settings','—','✓','✓'],['View existing passwords','—','—','—'],['Set/reset member password','—','✓','✓'],['Full association control','—','✓','✓']].map(row=><div className="matrix-row" key={row[0]}>{row.map((v,i)=><span key={i} className={i===0?'matrix-label':''}>{v}</span>)}</div>)}</div></div>
+    <div className="panel security-panel"><div className="security-icon"><KeyRound size={20}/></div><div><h3>Password management</h3><p>A Level can set a new password for any account, but cannot view an existing password. B Level can edit Senpai details only and has no password-management controls in this preview. For a public site, passwords and permissions must be enforced by a secure backend.</p></div></div>
+    <div className="panel security-panel"><div className="security-icon"><CircleHelp size={20}/></div><div><h3>How to edit users easily</h3><p>Open <b>src/users.json</b> in VS Code or Notepad to edit the starter account list, then save and rebuild/redeploy. Changes made inside this browser preview do not write back into that file or sync to other devices.</p></div></div>
   </>
 }
 function ControlTile({icon:Icon,title,text,status}) {return <div className="control-tile"><div className="control-tile-icon"><Icon size={19}/></div><div><h3>{title}</h3><p>{text}</p><span className="access-chip">{status}</span></div></div>}

@@ -1,0 +1,21 @@
+WWMAA V5 - EASY USER EDITING
+
+MAIN FILE: src/users.json
+
+Open this file in VS Code or Notepad to edit the starter user records.
+Fields:
+- id: login/member ID
+- name: user's full name
+- role: A Level, B Level, Student, Senpai, or Sensi
+- status: Active/Inactive label
+- passwordSet: true/false status label only (never put the actual password here)
+- dojo: assigned dojo
+- belt: current belt
+
+PERMISSIONS IN THE PREVIEW
+- A Level: create/edit/delete all user records, including admin records; can set a new password in the UI.
+- B Level: edit Senpai records only. Cannot create/delete accounts or manage passwords.
+- Student/Senpai/Sensi use the separate member login tab.
+
+IMPORTANT
+This project is a frontend prototype, not production authentication. Any non-empty ID/password is accepted in the login screen and admin role selection is not secure. UI changes are temporary and do not write back into src/users.json. For a real public website, connect secure backend authentication/database role policies (for example Supabase) before using real users or passwords.

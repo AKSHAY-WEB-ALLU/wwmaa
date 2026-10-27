@@ -1,4 +1,4 @@
-# World Wide Martial Arts Association Portal
+# World Wide Martial Arts Association Portal — V5
 
 A responsive React + Vite starter project for WWMAA with a dark red, black and white visual theme.
 
@@ -47,3 +47,11 @@ For preview only, the sign-in screen accepts any non-empty ID and any non-empty 
 - A Level and B Level can create login IDs, assign roles, and set/reset account passwords in the admin UI.
 - Password privacy: admins cannot retrieve an existing password. Production implementation must store salted password hashes and support admin-triggered resets by securely setting a new temporary password or sending a one-time reset flow. Do not store or log plaintext passwords.
 - Important: this package is still a frontend demo. Login-mode selection is not real authentication. The production backend must validate each account's stored role and session, and enforce all permissions server-side.
+
+
+## V5 user permissions and editable user file
+- `src/users.json` is the starter account directory. Edit it with VS Code or Notepad to change starter user names, IDs, roles, dojo, belt, and whether a password is marked as set. Do not put real passwords in this JSON file.
+- A Level UI: can create, edit, and delete user records, including administrator accounts; can set a new password in the preview (existing passwords are never revealed).
+- B Level UI: can edit Senpai accounts only. Other roles and administrator accounts are view-only; B Level cannot create/delete accounts or manage passwords.
+- Student/Senpai/Sensi login remains a separate sign-in mode.
+- This is still a frontend demo. Login accepts non-empty values and the selected admin role is not securely verified. Edits made in the UI are in-memory only and do not write back to `src/users.json`. Before public use, connect a backend such as Supabase with real authentication, server-side role policies, and secure password reset flows.
