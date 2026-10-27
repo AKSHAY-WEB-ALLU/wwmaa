@@ -1,4 +1,4 @@
-# World Wide Martial Arts Association Portal — V5
+# World Wide Martial Arts Association Portal — V7
 
 A responsive React + Vite starter project for WWMAA with a dark red, black and white visual theme.
 
@@ -18,6 +18,13 @@ This ZIP is a frontend prototype. It uses browser local storage for demonstratio
 ## Login prototype
 For preview only, the sign-in screen accepts any non-empty ID and any non-empty passcode. Use the role selector to preview Student/Senpai/Sensi, B Level, or A Level screens. This is not real authentication.
 
+
+## V7 updates
+- Dojo-specific attendance, filtered by dojo, date, and discipline.
+- Mark each member Present, Absent, or Late.
+- Correct previous attendance by selecting a historical date or clicking Edit in the history table.
+- Save attendance records in browser local storage and show each member their own recorded history.
+- See ATTENDANCE-V7-GUIDE.txt for instructions and prototype limitations.
 
 ## V2 updates
 - Fixed/expanded the Control Panel with an interactive Login ID Manager.
