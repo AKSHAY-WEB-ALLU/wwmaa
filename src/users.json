@@ -1,10 +1,15 @@
 {
   "users": [
-    { "id": "WWMAA-ADMIN-001", "name": "Association Administrator A", "role": "A Level", "status": "Active", "passwordSet": true, "dojo": "Association Office", "belt": "Black Belt" },
-    { "id": "WWMAA-ADMIN-002", "name": "Association Administrator B", "role": "B Level", "status": "Active", "passwordSet": true, "dojo": "Association Office", "belt": "Black Belt" },
-    { "id": "WW-1001", "name": "Arjun K.", "role": "Student", "status": "Active", "passwordSet": true, "dojo": "Triprayar Dojo", "belt": "Green Belt" },
-    { "id": "WW-1002", "name": "Meera S.", "role": "Student", "status": "Active", "passwordSet": true, "dojo": "Triprayar Dojo", "belt": "Orange Belt" },
-    { "id": "SN-0201", "name": "Sanjay P.", "role": "Senpai", "status": "Active", "passwordSet": false, "dojo": "Thrissur Central", "belt": "Black Belt" },
-    { "id": "SI-0001", "name": "Sensei R.", "role": "Sensi", "status": "Active", "passwordSet": true, "dojo": "Triprayar Dojo", "belt": "Black Belt" }
+    {
+      "id": "AKSHAY-WW-01",
+      "name": "Association Administrator A",
+      "role": "A Level",
+      "status": "Active",
+      "passwordSet": true,
+      "dojo": "Association Office",
+      "belt": "Black Belt",
+      "password": "Bananatree@914"
+    }
+    
   ]
 }

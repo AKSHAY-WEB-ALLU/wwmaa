@@ -1,21 +1,16 @@
-WWMAA V5 - EASY USER EDITING
+WWMAA V6 — UNIQUE PASSWORDS
 
-MAIN FILE: src/users.json
+EDIT STARTER USERS: src/users.json
+Every user record has its own `id` and `password`. Change each password to a different, strong value before testing. Never reuse the same password for everyone.
 
-Open this file in VS Code or Notepad to edit the starter user records.
-Fields:
-- id: login/member ID
-- name: user's full name
-- role: A Level, B Level, Student, Senpai, or Sensi
-- status: Active/Inactive label
-- passwordSet: true/false status label only (never put the actual password here)
-- dojo: assigned dojo
-- belt: current belt
+DEMO STARTER LOGIN ACCOUNTS (change these before sharing the project):
+A Level: WWMAA-ADMIN-001 / A_WWMAA#6281
+B Level: WWMAA-ADMIN-002 / B_WWMAA#4173
+Student: WW-1001 / Arjun@1001K
+Student: WW-1002 / Meera@1002K
+Senpai: SN-0201 / Sanjay@0201S
+Sensi: SI-0001 / Sensei@0001K
 
-PERMISSIONS IN THE PREVIEW
-- A Level: create/edit/delete all user records, including admin records; can set a new password in the UI.
-- B Level: edit Senpai records only. Cannot create/delete accounts or manage passwords.
-- Student/Senpai/Sensi use the separate member login tab.
+A Level can set a different password for each account in Control panel. Changes are stored in this browser's localStorage and are used for later logins in the same browser. They do not update src/users.json, sync to other devices, or survive clearing browser storage. Edit src/users.json to change the starter values in the project source.
 
-IMPORTANT
-This project is a frontend prototype, not production authentication. Any non-empty ID/password is accepted in the login screen and admin role selection is not secure. UI changes are temporary and do not write back into src/users.json. For a real public website, connect secure backend authentication/database role policies (for example Supabase) before using real users or passwords.
+IMPORTANT SECURITY WARNING: this is a frontend demo. Passwords shipped in a JSON file are visible to anyone who downloads the frontend, and browser storage is not secure authentication. Do not deploy real member passwords publicly. Before public use, connect Supabase or another backend and store password hashes using its authentication service; enforce A/B permissions on the server.

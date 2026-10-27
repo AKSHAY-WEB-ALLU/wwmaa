@@ -55,3 +55,7 @@ For preview only, the sign-in screen accepts any non-empty ID and any non-empty 
 - B Level UI: can edit Senpai accounts only. Other roles and administrator accounts are view-only; B Level cannot create/delete accounts or manage passwords.
 - Student/Senpai/Sensi login remains a separate sign-in mode.
 - This is still a frontend demo. Login accepts non-empty values and the selected admin role is not securely verified. Edits made in the UI are in-memory only and do not write back to `src/users.json`. Before public use, connect a backend such as Supabase with real authentication, server-side role policies, and secure password reset flows.
+
+
+## V6 password note
+Each starter account now has a distinct demo password in `src/users.json`. A Level can reset individual passwords from the Control panel; changes persist only in the current browser preview. This is not production security: do not publish real passwords in frontend files. Connect a secure backend before public use. See `USERS-EDIT-GUIDE.txt`.
