@@ -1,14 +1,14 @@
 {
   "users": [
     {
-      "id": "WWMAA-ADMIN-001",
+      "id": "AKSHAY",
       "name": "Association Administrator A",
       "role": "A Level",
       "status": "Active",
       "passwordSet": true,
       "dojo": "Association Office",
       "belt": "Black Belt",
-      "password": "A_WWMAA#6281"
+      "password": "AKSHAY@914"
     },
     {
       "id": "WWMAA-ADMIN-002",
