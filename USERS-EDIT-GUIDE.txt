@@ -1,16 +1,15 @@
-WWMAA V6 — UNIQUE PASSWORDS
+WWMAA V10 USER EDIT GUIDE
 
-EDIT STARTER USERS: src/users.json
-Every user record has its own `id` and `password`. Change each password to a different, strong value before testing. Never reuse the same password for everyone.
+STARTER ACCOUNTS
+Open src/users.json in VS Code or Notepad. Each account has its own ID, password, role, dojo and style.
 
-DEMO STARTER LOGIN ACCOUNTS (change these before sharing the project):
-A Level: WWMAA-ADMIN-001 / A_WWMAA#6281
-B Level: WWMAA-ADMIN-002 / B_WWMAA#4173
-Student: WW-1001 / Arjun@1001K
-Student: WW-1002 / Meera@1002K
-Senpai: SN-0201 / Sanjay@0201S
-Sensi: SI-0001 / Sensei@0001K
+STYLE VALUES
+- Karate: account sees Karate information.
+- Kick boxing: account sees Kick boxing information.
+- All: used for Sensei and administrator accounts that are allowed to view both disciplines.
 
-A Level can set a different password for each account in Control panel. Changes are stored in this browser's localStorage and are used for later logins in the same browser. They do not update src/users.json, sync to other devices, or survive clearing browser storage. Edit src/users.json to change the starter values in the project source.
+CONTROL PANEL
+A Level can create accounts, assign their role and discipline, and set a unique initial password or reset one later. B Level is limited to editing Senpai accounts. In this frontend preview, changes made through the Control panel are saved in the current browser and do not rewrite src/users.json.
 
-IMPORTANT SECURITY WARNING: this is a frontend demo. Passwords shipped in a JSON file are visible to anyone who downloads the frontend, and browser storage is not secure authentication. Do not deploy real member passwords publicly. Before public use, connect Supabase or another backend and store password hashes using its authentication service; enforce A/B permissions on the server.
+SECURITY WARNING
+The passwords in src/users.json are demo credentials only. Anyone who downloads the source can read them. Before public launch, replace this demo login with Supabase Auth or another secure backend, and enforce role and discipline access in database/server policies.

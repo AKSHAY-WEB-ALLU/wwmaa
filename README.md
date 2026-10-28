@@ -1,68 +1,40 @@
-# World Wide Martial Arts Association Portal — V7
+# WWMAA Association Portal — V10 Concept Build
 
-A responsive React + Vite starter project for WWMAA with a dark red, black and white visual theme.
+A React + Vite frontend prototype for World Wide Martial Arts Association. V10 adds discipline-aware portal views, member-to-event assignment, an event selector in the top bar, dojo discipline tabs, and targeted association announcements.
+
+## V10 changes
+- **Discipline-specific accounts:** account records in `src/users.json` include `style` (`Karate`, `Kick boxing`, or `All`). Karate members see Karate events and discipline-specific information; Kick boxing members see Kick boxing information; Sensei accounts see both disciplines.
+- **Restricted Senpai view:** Senpai members see their member portal and are scoped to their assigned dojo/discipline rather than the full association workspace.
+- **Dojo discipline buttons:** choose Karate or Kick boxing on the Dojos page. Member attendance is also filtered to the selected discipline.
+- **Student creation:** A Level can assign a discipline and choose an event of that discipline when creating a member profile.
+- **Event in the top bar:** the current event is displayed in a dropdown in the top bar. A member's assigned event is selected on login when available.
+- **Association announcements:** A and B administrators can publish notices for All members, Students, Senpais, Senseis, all Administrators, or a specific A Level / B Level role. Notices include Normal / Important / Urgent priority and are filtered for the signed-in role.
+- **Previous modules retained:** overview, member directory, date-editable dojo attendance, events, account control, fees, belt grading, reports and CSV export.
+- **Fresh V10 local storage keys:** avoids automatically reusing most V7–V9 local demo data. Existing V9 records are not automatically migrated.
 
 ## Run locally
-1. Install Node.js (LTS).
+1. Install Node.js LTS.
 2. Extract this ZIP.
-3. Open a terminal in this folder.
-4. Run `npm install`
-5. Run `npm run dev`
+3. Open a terminal in the folder containing `package.json`.
+4. Run `npm install`.
+5. Run `npm run dev` and open the local URL printed in the terminal.
 
-## Build
-Run `npm run build`. The production website is created in `dist/`.
+## Demo accounts
+These are public demo credentials only; do not reuse real passwords.
 
-## Important security note
-This ZIP is a frontend prototype. It uses browser local storage for demonstration and is not a secure public login system. Do not use real student information or real passwords in this demo. Before public deployment, implement server-side authentication, hashed credentials, database-backed roles and authorization, audit logs, and backups. Do not rely on a role selected by the user in the browser for A/B/C access control.
+| Access | Login ID | Password | Login tab |
+|---|---|---|---|
+| A Level | `WWMAA-ADMIN-001` | `A_WWMAA#6281` | Admin login → A Level |
+| B Level | `WWMAA-ADMIN-002` | `B_WWMAA#4173` | Admin login → B Level |
+| Karate Student | `WW-1001` | `Arjun@1001K` | Student / Senpai / Sensei |
+| Karate Student | `WW-1002` | `Meera@1002K` | Student / Senpai / Sensei |
+| Kick boxing Student | `WW-1003` | `Nikhil@1003K` | Student / Senpai / Sensei |
+| Karate Senpai | `SN-0201` | `Sanjay@0201S` | Student / Senpai / Sensei |
+| Sensei (all disciplines) | `SI-0001` | `Sensei@0001K` | Student / Senpai / Sensei |
 
-## Login prototype
-For preview only, the sign-in screen accepts any non-empty ID and any non-empty passcode. Use the role selector to preview Student/Senpai/Sensi, B Level, or A Level screens. This is not real authentication.
+Edit `src/users.json` to change starter accounts and their discipline. A Level can also edit accounts and set new individual passwords from Control panel. In this demo, those Control panel changes are saved only to the current browser and do not rewrite `src/users.json`.
 
+## Prototype limitations — read before public launch
+This is **not production-ready authentication**. Passwords are present in frontend source for demo use, and account permissions are enforced in client-side UI only. LocalStorage data is not shared between devices and can be changed by a technically capable user. Do not use this preview for real member, health, identity or financial information.
 
-## V7 updates
-- Dojo-specific attendance, filtered by dojo, date, and discipline.
-- Mark each member Present, Absent, or Late.
-- Correct previous attendance by selecting a historical date or clicking Edit in the history table.
-- Save attendance records in browser local storage and show each member their own recorded history.
-- See ATTENDANCE-V7-GUIDE.txt for instructions and prototype limitations.
-
-## V2 updates
-- Fixed/expanded the Control Panel with an interactive Login ID Manager.
-- A Level can create IDs and edit roles; B Level can view IDs.
-- Added separate independent settings panels for Karate and Kick boxing.
-- Added event-setting toggles for attendance, registration, and results/grading.
-- Settings and IDs are demo-only and stay in the current browser session; they are not synced to a database.
-
-
-## V3 visual and password policy updates
-- High-impact red/black/white dojo visual direction with bolder typography and animated hover interactions.
-- Updated login hero and dashboard identity.
-- Explicit policy: A Level and B Level cannot view, reveal, change, or reset members' existing passwords.
-- Production recommendation: password hashes only; account holders change their own passwords through secure authentication. A Level may disable accounts or trigger a one-time reset invitation without seeing a password.
-- Password controls in this frontend are policy/UI only; real enforcement requires server-side authentication and database authorization.
-
-
-## V3 permission clarification
-- A Level AND B Level can use all association admin features: create/manage login IDs, assign roles, manage students, manage dojos, create events, and change Karate/Kick boxing settings.
-- Neither A Level nor B Level can view or change an existing member password.
-- This is still a frontend prototype; the same permissions must be enforced server-side for production.
-
-
-## V4 updates
-- Separate Student / Senpai / Sensi sign-in mode from Admin sign-in mode.
-- Member mode has its own student-facing navigation and profile / attendance pages.
-- A Level and B Level can create login IDs, assign roles, and set/reset account passwords in the admin UI.
-- Password privacy: admins cannot retrieve an existing password. Production implementation must store salted password hashes and support admin-triggered resets by securely setting a new temporary password or sending a one-time reset flow. Do not store or log plaintext passwords.
-- Important: this package is still a frontend demo. Login-mode selection is not real authentication. The production backend must validate each account's stored role and session, and enforce all permissions server-side.
-
-
-## V5 user permissions and editable user file
-- `src/users.json` is the starter account directory. Edit it with VS Code or Notepad to change starter user names, IDs, roles, dojo, belt, and whether a password is marked as set. Do not put real passwords in this JSON file.
-- A Level UI: can create, edit, and delete user records, including administrator accounts; can set a new password in the preview (existing passwords are never revealed).
-- B Level UI: can edit Senpai accounts only. Other roles and administrator accounts are view-only; B Level cannot create/delete accounts or manage passwords.
-- Student/Senpai/Sensi login remains a separate sign-in mode.
-- This is still a frontend demo. Login accepts non-empty values and the selected admin role is not securely verified. Edits made in the UI are in-memory only and do not write back to `src/users.json`. Before public use, connect a backend such as Supabase with real authentication, server-side role policies, and secure password reset flows.
-
-
-## V6 password note
-Each starter account now has a distinct demo password in `src/users.json`. A Level can reset individual passwords from the Control panel; changes persist only in the current browser preview. This is not production security: do not publish real passwords in frontend files. Connect a secure backend before public use. See `USERS-EDIT-GUIDE.txt`.
+Before public launch, connect Supabase (or another secure backend) and implement server-side authentication, password hashing, role/discipline authorization, database policies, audit logs, secure password resets and shared database tables. Do not put service-role keys or real passwords in the frontend.
