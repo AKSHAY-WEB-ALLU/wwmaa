@@ -6,6 +6,7 @@ import {
   Building2, Eye, Pencil, KeyRound, CircleHelp, Check, Clock3, Receipt, GraduationCap, Megaphone, BarChart3, Download, FileText, ListChecks, FileSpreadsheet
 } from 'lucide-react'
 import './styles.css'
+import DownloadLanding from './DownloadLanding.jsx'
 import userDirectory from './users.json'
 
 const initialStudents = [
@@ -355,4 +356,5 @@ function Reports({students,events,attendanceRecords,fees,grading,isA}) {
 function ControlTile({icon:Icon,title,text,status}) {return <div className="control-tile"><div className="control-tile-icon"><Icon size={19}/></div><div><h3>{title}</h3><p>{text}</p><span className="access-chip">{status}</span></div></div>}
 function Modal({title,close,children}) {return <div className="modal-backdrop" onMouseDown={e=>e.target===e.currentTarget&&close()}><div className="modal"><div className="modal-head"><div><div className="eyebrow">ASSOCIATION PORTAL</div><h2>{title}</h2></div><button className="icon-btn" onClick={close}><X size={19}/></button></div>{children}</div></div>}
 
-createRoot(document.getElementById('root')).render(<App />)
+const isDownloadHome = window.location.pathname === '/' || window.location.pathname === '/index.html'
+createRoot(document.getElementById('root')).render(isDownloadHome ? <DownloadLanding /> : <App />)
