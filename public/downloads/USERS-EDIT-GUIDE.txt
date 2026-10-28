@@ -1,0 +1,15 @@
+WWMAA V10 USER EDIT GUIDE
+
+STARTER ACCOUNTS
+Open src/users.json in VS Code or Notepad. Each account has its own ID, password, role, dojo and style.
+
+STYLE VALUES
+- Karate: account sees Karate information.
+- Kick boxing: account sees Kick boxing information.
+- All: used for Sensei and administrator accounts that are allowed to view both disciplines.
+
+CONTROL PANEL
+A Level can create accounts, assign their role and discipline, and set a unique initial password or reset one later. B Level is limited to editing Senpai accounts. In this frontend preview, changes made through the Control panel are saved in the current browser and do not rewrite src/users.json.
+
+SECURITY WARNING
+The passwords in src/users.json are demo credentials only. Anyone who downloads the source can read them. Before public launch, replace this demo login with Supabase Auth or another secure backend, and enforce role and discipline access in database/server policies.

@@ -1,0 +1,21 @@
+WWMAA V10 — TOURNAMENT SURVEYS & FEE SORTING UPGRADE
+
+FEES
+- Use the status dropdown to filter All, Unpaid, Due, Paid, or Waived.
+- Sort by payment status, member name, amount, or month.
+- Choose Any month or a particular month.
+- This remains a manual fee ledger. No online payments are collected.
+
+TOURNAMENT SURVEYS
+- A Level and B Level can create a survey, add questions, choose answer types, set an optional deadline, and select exactly which students/Senpais may respond.
+- Members only see surveys assigned to their account ID.
+- Members can submit a response once per survey in this browser prototype.
+- Administrators can view responses and export a CSV that opens in Excel or Google Sheets.
+- The checkbox “Convert names to UPPERCASE in Excel/CSV export” converts response names like “akshay p s” to “AKSHAY P S” in the export only. It does not alter the member profile.
+
+IMPORTANT
+This is a browser-local prototype. Survey definitions and responses are stored in localStorage and will not synchronize between different devices or browsers. Production use needs a shared database and server-enforced access rules.
+
+RUN
+npm install
+npm run dev

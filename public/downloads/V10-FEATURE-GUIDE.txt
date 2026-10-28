@@ -1,0 +1,34 @@
+WWMAA V10 FEATURE GUIDE
+
+1. DISCIPLINE-SPECIFIC LOGIN
+   Open src/users.json. Each member account has a style: Karate or Kick boxing. Sensei accounts use style "All". On login, Karate accounts see Karate events and relevant discipline records; Kick boxing accounts see Kick boxing records; Sensei can view both disciplines. Assign style in the A Level Control panel for new accounts.
+
+2. SENPAI ACCESS
+   Senpai accounts use the member portal and are restricted to their assigned dojo and discipline. They do not get the full A Level reports, fees, grading management or user-control workspace.
+
+3. DOJO DISCIPLINE BUTTONS
+   Open Dojos and select Karate or Kick boxing. The page filters dojo cards by the selected discipline. Attendance also filters the roll call to members assigned to the chosen dojo and selected discipline.
+
+4. STUDENT / MEMBER CREATION
+   A Level opens Student details → Add student. Choose the dojo, discipline, belt, member type and an event belonging to the selected discipline. The member's assigned event is selected in the top-bar event control on login when available.
+
+5. TOP-BAR EVENT
+   Use the EVENT dropdown in the top bar to select the event currently being viewed. The event title stays visible at the top of the portal.
+
+6. ASSOCIATION ANNOUNCEMENTS
+   A and B administrators can publish notices for:
+   - All members
+   - Students
+   - Senpais
+   - Senseis
+   - Administrators (all admin roles)
+   - A Level only
+   - B Level only
+
+   Set a priority of Normal, Important or Urgent. Members see notices addressed to their role. Announcements are saved in the current browser only.
+
+7. START THE WEBSITE
+   Run npm install, then npm run dev, from the folder containing package.json.
+
+IMPORTANT
+This is a frontend prototype, not secure production authentication. Passwords in src/users.json are demo credentials. Browser-local records do not synchronize between devices and are not secure against tampering. Use Supabase or another backend with server-side authentication and access policies before publishing publicly.
