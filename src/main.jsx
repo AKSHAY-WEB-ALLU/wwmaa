@@ -30,7 +30,10 @@ const navItems = [
 function announcementVisibleForSession(item, session) { if (!session) return false; const a=item.audience||'All members'; const roleMatch=['Everyone','All members'].includes(a)||(a==='Students'&&session.role==='Student')||(a==='Senpais'&&session.role==='Senpai')||(a==='Senseis'&&['Sensei','Sensi'].includes(session.role))||(a==='Administrators'&&['A Level','B Level'].includes(session.role))||a===session.role; return roleMatch&&(!item.dojo||item.dojo==='All dojos'||item.dojo===session.dojo) }
 
 function App() {
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('wwmaa-v13-remembered-session') || 'null') } catch { return null }
+  })
+  const [rememberMe, setRememberMe] = useState(true)
   const [userAccounts, setUserAccounts] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-user-accounts-v10')) || userDirectory.users } catch { return userDirectory.users } })
   const [loginId, setLoginId] = useState('')
   const [passcode, setPasscode] = useState('')
@@ -78,7 +81,10 @@ function App() {
     const profile = students.find(s => String(s.id).toLowerCase() === String(account.id).toLowerCase())
     const accountRole = account.role === 'Sensi' ? 'Sensei' : account.role
     const accountDiscipline = ['Sensei','Sensi'].includes(account.role) ? 'All' : (account.style || account.discipline || profile?.style || 'Karate')
-    setSession({ id: account.id, name: account.name, role: accountRole, dojo: account.dojo, discipline: accountDiscipline, loginMode })
+    const nextSession = { id: account.id, name: account.name, role: accountRole, dojo: account.dojo, discipline: accountDiscipline, loginMode }
+    setSession(nextSession)
+    if (rememberMe) localStorage.setItem('wwmaa-v13-remembered-session', JSON.stringify(nextSession))
+    else localStorage.removeItem('wwmaa-v13-remembered-session')
     const preferredEvent = events.find(ev => profile?.eventId && String(ev.id) === String(profile.eventId)) || events.find(ev => accountDiscipline === 'All' || ev.type.toLowerCase() === accountDiscipline.toLowerCase())
     setActiveEventId(preferredEvent ? String(preferredEvent.id) : '')
     setActive('overview'); setNotice('')
@@ -100,7 +106,7 @@ function App() {
     setNotice('Event added in this browser preview.')
   }
 
-  if (!session) return <Login login={login} loginId={loginId} setLoginId={setLoginId} passcode={passcode} setPasscode={setPasscode} previewRole={previewRole} setPreviewRole={setPreviewRole} loginMode={loginMode} setLoginMode={setLoginMode} notice={notice} />
+  if (!session) return <Login login={login} loginId={loginId} setLoginId={setLoginId} passcode={passcode} setPasscode={setPasscode} previewRole={previewRole} setPreviewRole={setPreviewRole} loginMode={loginMode} setLoginMode={setLoginMode} notice={notice} rememberMe={rememberMe} setRememberMe={setRememberMe} />
 
   return <div className="app-shell">
     <aside className={`sidebar ${mobileNav ? 'sidebar-open' : ''}`}>
@@ -118,8 +124,8 @@ function App() {
       )}</nav>
       <div className="sidebar-bottom">
         <div className="role-card"><div className="role-icon"><Shield size={18}/></div><div><small>ACCESS LEVEL</small><strong>{role}</strong></div><span className="online-dot"/></div>
-        <button className="nav-link logout" onClick={() => {setSession(null);setPasscode('');setLoginId('')}}><LogOut size={18}/><span>Sign out</span></button>
-        <small className="version">WWMAA PORTAL · V10</small>
+        <button className="nav-link logout" onClick={() => {setSession(null);localStorage.removeItem('wwmaa-v13-remembered-session');setPasscode('');setLoginId('')}}><LogOut size={18}/><span>Sign out</span></button>
+        <small className="version">WWMAA PORTAL · V13</small>
       </div>
     </aside>
     {mobileNav && <div className="scrim" onClick={() => setMobileNav(false)} />}
@@ -149,10 +155,10 @@ function App() {
   </div>
 }
 
-function Login({login,loginId,setLoginId,passcode,setPasscode,previewRole,setPreviewRole,loginMode,setLoginMode,notice}) {
+function Login({login,loginId,setLoginId,passcode,setPasscode,previewRole,setPreviewRole,loginMode,setLoginMode,notice,rememberMe,setRememberMe}) {
   return <div className="login-screen"><div className="login-visual"><div className="login-top-brand"><img src="/logo.png" alt="WWMAA crest"/><div><b>WORLD WIDE</b><span>MARTIAL ARTS ASSOCIATION</span></div></div><div className="hero-copy"><div className="eyebrow"><span/> DISCIPLINE · RESPECT · COURAGE</div><h1>FORGED BY<br/><em>DISCIPLINE.</em></h1><p>ONE ASSOCIATION. ONE SPIRIT. A LIFETIME OF MASTERY.</p><div className="hero-stats"><div><b>1983</b><span>Since</span></div><i/><div><b>01</b><span>Association</span></div><i/><div><b>∞</b><span>Possibilities</span></div></div></div><div className="brush-mark">武 道</div><div className="login-footer">WORLD WIDE MARTIAL ARTS ASSOCIATION <span>•</span> BUILT ON DISCIPLINE</div></div><div className="login-panel"><div className="mobile-crest"><img src="/logo.png" alt="WWMAA crest"/></div><div className="login-card"><div className="login-heading"><div className="mini-icon"><KeyRound size={20}/></div><div className="eyebrow">{loginMode === 'student' ? 'STUDENT & INSTRUCTOR ACCESS' : 'ADMINISTRATOR ACCESS'}</div><h2>{loginMode === 'student' ? 'Welcome, warrior.' : 'Welcome back.'}</h2><p>{loginMode === 'student' ? 'Sign in to view your profile, training and events.' : 'Sign in to manage the association portal.'}</p></div>
     <div className="login-mode-tabs"><button type="button" className={loginMode==='student'?'selected':''} onClick={()=>{setLoginMode('student');setNotice('')}}><Users size={15}/> Student / Senpai / Sensei</button><button type="button" className={loginMode==='admin'?'selected':''} onClick={()=>{setLoginMode('admin');setNotice('')}}><Shield size={15}/> Admin login</button></div>
-    <form onSubmit={login}><label className="field-label">STUDENT / SENPAI / SENSEI ID<div className="input-wrap"><UserRound size={18}/><input autoComplete="username" value={loginId} onChange={e=>setLoginId(e.target.value)} placeholder="Enter your association ID" required/></div></label><label className="field-label">PASSCODE<div className="input-wrap"><KeyRound size={18}/><input autoComplete="current-password" type="password" value={passcode} onChange={e=>setPasscode(e.target.value)} placeholder="Enter passcode" required/></div></label> {loginMode === 'admin' && <label className="field-label">ADMIN ACCESS LEVEL<select className="role-select" value={previewRole} onChange={e=>setPreviewRole(e.target.value)}><option>A Level</option><option>B Level</option></select></label>}<button className="btn primary login-submit">Enter member portal <ChevronRight size={18}/></button>{notice && <div className="error-msg">{notice}</div>}</form><div className="login-note"><Shield size={15}/><span>{loginMode === 'student' ? 'Student, Senpai and Sensei accounts use the separate member sign-in.' : 'Administrator accounts only. A and B levels can manage association accounts and passwords.'}</span></div><div className="demo-warning">V10 PREVIEW · DISCIPLINE-AWARE ASSOCIATION SUITE</div></div><div className="panel-bottom">© World Wide Martial Arts Association <span>•</span> Since 1983</div></div></div>
+    <form onSubmit={login}><label className="field-label">STUDENT / SENPAI / SENSEI ID<div className="input-wrap"><UserRound size={18}/><input autoComplete="username" value={loginId} onChange={e=>setLoginId(e.target.value)} placeholder="Enter your association ID" required/></div></label><label className="field-label">PASSCODE<div className="input-wrap"><KeyRound size={18}/><input autoComplete="current-password" type="password" value={passcode} onChange={e=>setPasscode(e.target.value)} placeholder="Enter passcode" required/></div></label> {loginMode === 'admin' && <label className="field-label">ADMIN ACCESS LEVEL<select className="role-select" value={previewRole} onChange={e=>setPreviewRole(e.target.value)}><option>A Level</option><option>B Level</option></select></label>}<label className="remember-device"><input type="checkbox" checked={rememberMe} onChange={e=>setRememberMe(e.target.checked)}/><span><b>Remember me on this device</b><small>Stay signed in when you reopen this website on this browser.</small></span></label><button className="btn primary login-submit">Enter member portal <ChevronRight size={18}/></button>{notice && <div className="error-msg">{notice}</div>}</form><div className="login-note"><Shield size={15}/><span>{loginMode === 'student' ? 'Student, Senpai and Sensei accounts use the separate member sign-in.' : 'Administrator accounts only. A and B levels can manage association accounts and passwords.'}</span></div><div className="demo-warning">V13 PREVIEW · DISCIPLINE-AWARE ASSOCIATION SUITE</div></div><div className="panel-bottom">© World Wide Martial Arts Association <span>•</span> Since 1983</div></div></div>
 }
 
 function PageTitle({eyebrow,title,description,action}) { return <div className="page-title-row"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{action}</div> }

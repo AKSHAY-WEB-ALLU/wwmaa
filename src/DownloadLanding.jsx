@@ -13,7 +13,7 @@ export default function DownloadLanding() {
         <img src="/logo.png" alt="WWMAA logo" onError={e => { e.currentTarget.style.display = 'none' }} />
         <span><b>WWMAA</b><small>WORLD WIDE MARTIAL ARTS ASSOCIATION</small></span>
       </a>
-      <span className="download-version">WEBREADER · V12</span>
+      <span className="download-version">WEBREADER · V13.01</span>
     </header>
 
     <section className="download-hero">
