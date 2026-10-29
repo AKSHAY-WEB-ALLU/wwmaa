@@ -9,18 +9,20 @@ import './styles.css'
 import DownloadLanding from './DownloadLanding.jsx'
 import userDirectory from './users.json'
 
-const initialStudents = [
-  { id: 'WW-1001', name: 'Arjun K.', dojo: 'Triprayar Dojo', belt: 'Green Belt', role: 'Student', style: 'Karate', eventId: 1 },
-  { id: 'WW-1002', name: 'Meera S.', dojo: 'Triprayar Dojo', belt: 'Orange Belt', role: 'Student', style: 'Karate', eventId: 1 },
-  { id: 'WW-1003', name: 'Nikhil K.', dojo: 'Thrissur Central', belt: 'White Belt', role: 'Student', style: 'Kick boxing', eventId: 2 },
-  { id: 'SN-0201', name: 'Sanjay P.', dojo: 'Thrissur Central', belt: 'Black Belt', role: 'Senpai', style: 'Karate' },
-  { id: 'SI-0001', name: 'Sensei R.', dojo: 'Triprayar Dojo', belt: 'Black Belt', role: 'Sensei', style: 'All', eventId: null },
-]
-const initialEvents = [
-  { id: 1, title: 'Monthly Karate Training', type: 'Karate', date: '2026-11-02', time: '07:00 AM', place: 'Triprayar Dojo', status: 'Upcoming' },
-  { id: 2, title: 'Kick Boxing Skills Session', type: 'Kick boxing', date: '2026-11-08', time: '04:00 PM', place: 'Thrissur Central', status: 'Upcoming' },
-  { id: 3, title: 'Association Belt Assessment', type: 'Karate', date: '2026-11-15', time: '09:00 AM', place: 'Main Dojo', status: 'Registration open' },
-]
+const initialStudents = []
+const initialEvents = []
+const LEGACY_DEMO_ACCOUNTS = new Map([['WW-1001','Arjun K.'],['WW-1002','Meera S.'],['WW-1003','Nikhil K.'],['SN-0201','Sanjay P.'],['SI-0001','Sensei R.']])
+function isLegacyDemoAccount(account) { return LEGACY_DEMO_ACCOUNTS.get(String(account.id || '').trim().toUpperCase()) === String(account.name || '').trim() }
+const LEGACY_DEMO_DOJO_NAMES = new Set(['Triprayar Dojo','Thrissur Central','Main Dojo'])
+const LEGACY_DEMO_EVENT_TITLES = new Set(['Monthly Karate Training','Kick Boxing Skills Session','Association Belt Assessment'])
+
+function loadSavedArray(key, fallback = []) {
+  try { const value = JSON.parse(localStorage.getItem(key) || 'null'); return Array.isArray(value) ? value : fallback } catch { return fallback }
+}
+function loadAccounts() {
+  const saved = loadSavedArray('wwmaa-user-accounts-v10', userDirectory.users || [])
+  return saved.filter(account => !isLegacyDemoAccount(account))
+}
 const navItems = [
   ['Overview', 'overview', Shield], ['Student details', 'students', Users],
   ['Attendance', 'attendance', ClipboardCheck], ['Upcoming events', 'events', CalendarDays],
@@ -34,30 +36,32 @@ function App() {
     try { return JSON.parse(localStorage.getItem('wwmaa-v13-remembered-session') || 'null') } catch { return null }
   })
   const [rememberMe, setRememberMe] = useState(true)
-  const [userAccounts, setUserAccounts] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-user-accounts-v10')) || userDirectory.users } catch { return userDirectory.users } })
+  const [userAccounts, setUserAccounts] = useState(loadAccounts)
+  React.useEffect(() => { localStorage.setItem('wwmaa-user-accounts-v10', JSON.stringify(userAccounts)) }, [userAccounts])
   const [loginId, setLoginId] = useState('')
   const [passcode, setPasscode] = useState('')
   const [previewRole, setPreviewRole] = useState('A Level')
   const [loginMode, setLoginMode] = useState('student')
   const [active, setActive] = useState('overview')
   const [mobileNav, setMobileNav] = useState(false)
-  const [students, setStudents] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-students-v10')) || initialStudents } catch { return initialStudents } })
+  const [students, setStudents] = useState(() => loadSavedArray('wwmaa-students-v10', initialStudents).filter(s => !isLegacyDemoAccount(s)))
   const [attendanceRecords, setAttendanceRecords] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-attendance-v10')) || [] } catch { return [] } })
-  const [events, setEvents] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-events-v10')) || initialEvents } catch { return initialEvents } })
+  const [events, setEvents] = useState(() => loadSavedArray('wwmaa-events-v10', initialEvents).filter(e => !LEGACY_DEMO_EVENT_TITLES.has(String(e.title || '').trim())))
   const [feeRecords, setFeeRecords] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-fees-v10')) || [] } catch { return [] } })
   const [gradingRecords, setGradingRecords] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-grading-v10')) || [] } catch { return [] } })
-  const [announcements, setAnnouncements] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-announcements-v10')) || [{id:1,title:'Welcome to the WWMAA Member Portal',body:'Use this portal to check training, attendance, events and association updates.',date:new Date().toISOString().slice(0,10),audience:'All members',dojo:'All dojos',priority:'Normal'}] } catch { return [] } })
+  const [announcements, setAnnouncements] = useState(() => loadSavedArray('wwmaa-announcements-v10', []))
   const [surveys, setSurveys] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-surveys-v10')) || [] } catch { return [] } })
-  const [dojos, setDojos] = useState(() => { try { return JSON.parse(localStorage.getItem('wwmaa-dojos-v10')) || [{id:1,name:'Triprayar Dojo',place:'Triprayar, Kerala',lead:'Sensei R.',disciplines:['Karate','Kick boxing'],classTimes:'Saturday 06:00–08:00 AM · Sunday 04:00–06:00 PM'},{id:2,name:'Thrissur Central',place:'Thrissur, Kerala',lead:'Senpai Sanjay',disciplines:['Karate','Kick boxing'],classTimes:'Tuesday & Thursday 06:00–07:30 PM'},{id:3,name:'Main Dojo',place:'Association HQ',lead:'Association office',disciplines:['Karate','Kick boxing'],classTimes:'Contact the association for class times'}] } catch { return [] } })
+  const [dojos, setDojos] = useState(() => loadSavedArray('wwmaa-dojos-v10', []).filter(d => !LEGACY_DEMO_DOJO_NAMES.has(String(d.name || '').trim())))
+  React.useEffect(() => { localStorage.setItem('wwmaa-dojos-v10', JSON.stringify(dojos)) }, [dojos])
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [eventType, setEventType] = useState('All')
   const [showStudentForm, setShowStudentForm] = useState(false)
   const [showEventForm, setShowEventForm] = useState(false)
   const [notice, setNotice] = useState('')
-  const [newStudent, setNewStudent] = useState({ name: '', id: '', dojo: 'Triprayar Dojo', belt: 'White Belt', role: 'Student', style: 'Karate', eventId: '' })
-  const [activeEventId, setActiveEventId] = useState('1')
-  const [newEvent, setNewEvent] = useState({ title: '', type: 'Karate', date: '', time: '', place: 'Triprayar Dojo' })
+  const [newStudent, setNewStudent] = useState({ name: '', id: '', dojo: '', belt: 'White Belt', role: 'Student', style: 'Karate', eventId: '' })
+  const [activeEventId, setActiveEventId] = useState('')
+  const [newEvent, setNewEvent] = useState({ title: '', type: 'Karate', date: '', time: '', place: '' })
   const role = session?.role || 'Student / Senpai / Sensei'
   const isSensei = ['Sensi','Sensei'].includes(role)
   const discipline = session?.discipline || 'All'
@@ -72,8 +76,8 @@ function App() {
   function login(e) {
     e.preventDefault()
     if (!loginId.trim() || !passcode.trim()) { setNotice('Enter your ID and password to continue.'); return }
-    const account = userAccounts.find(u => String(u.id || '').trim().toLowerCase() === loginId.trim().toLowerCase())
-    if (!account || String(account.password ?? '') !== passcode) { setNotice('ID or password does not match. Check the account in src/users.json or the A Level Control Panel.'); return }
+    const account = userAccounts.find(u => String(u.id || '').trim().toUpperCase() === loginId.trim().toUpperCase())
+    if (!account || String(account.password ?? '') !== passcode) { setNotice('ID or password is incorrect. Confirm the exact ID and password saved for this account. New accounts must have an initial password set by A Level.'); return }
     if (String(account.status || 'Active').toLowerCase() !== 'active') { setNotice('This account is inactive. Ask A Level to activate it.'); return }
     const admin = ['A Level','B Level'].includes(account.role)
     if ((loginMode === 'admin' && !admin) || (loginMode === 'student' && admin)) { setNotice('Choose the correct login tab for this account.'); return }
@@ -93,17 +97,17 @@ function App() {
     e.preventDefault()
     if (!newStudent.name.trim() || !newStudent.id.trim()) return
     setStudents(prev => { const next = [...prev, { ...newStudent, style: newStudent.style, eventId: newStudent.eventId ? Number(newStudent.eventId) : null }]; localStorage.setItem('wwmaa-students-v10', JSON.stringify(next)); return next })
-    setNewStudent({ name: '', id: '', dojo: 'Triprayar Dojo', belt: 'White Belt', role: 'Student', style: 'Karate', eventId: '' })
+    setNewStudent({ name: '', id: '', dojo: '', belt: 'White Belt', role: 'Student', style: 'Karate', eventId: '' })
     setShowStudentForm(false)
-    setNotice('Student profile added in this browser preview.')
+    setNotice('Member profile added in this browser.')
   }
   function addEvent(e) {
     e.preventDefault()
     if (!newEvent.title.trim() || !newEvent.date) return
     setEvents(prev => { const next = [...prev, { ...newEvent, id: Date.now(), status: 'Upcoming' }]; localStorage.setItem('wwmaa-events-v10', JSON.stringify(next)); return next })
-    setNewEvent({ title: '', type: 'Karate', date: '', time: '', place: 'Triprayar Dojo' })
+    setNewEvent({ title: '', type: 'Karate', date: '', time: '', place: '' })
     setShowEventForm(false)
-    setNotice('Event added in this browser preview.')
+    setNotice('Event added in this browser.')
   }
 
   if (!session) return <Login login={login} loginId={loginId} setLoginId={setLoginId} passcode={passcode} setPasscode={setPasscode} previewRole={previewRole} setPreviewRole={setPreviewRole} loginMode={loginMode} setLoginMode={setLoginMode} notice={notice} rememberMe={rememberMe} setRememberMe={setRememberMe} />
@@ -137,9 +141,9 @@ function App() {
       </header>
       <div className="page-content">
         {notice && <div className="notice"><Check size={16}/>{notice}<button onClick={() => setNotice('')}><X size={15}/></button></div>}
-        {active === 'overview' && <Overview role={role} students={filteredStudents} events={filteredEvents} setActive={setActive} />}
+        {active === 'overview' && <Overview role={role} students={filteredStudents} events={filteredEvents} dojos={dojos} setActive={setActive} />}
          {active === 'students' && ((session.loginMode === 'student' && !isSensei) ? <StudentProfile session={session} students={students} events={filteredEvents} /> : <Students students={restrictedSenpai ? filteredStudents.filter(s=>s.id===session.id || s.role==='Student' || s.role==='Senpai') : filteredStudents} query={query} setQuery={setQuery} canManage={canManage} isA={isA} setShowStudentForm={setShowStudentForm} />)}
-         {active === 'attendance' && ((session.loginMode === 'student' && !isSensei) ? <StudentAttendance session={session} students={students} attendanceRecords={attendanceRecords} /> : <Attendance students={filteredStudents} attendanceRecords={attendanceRecords} setAttendanceRecords={setAttendanceRecords} isA={isA} discipline={discipline} />)}
+         {active === 'attendance' && ((session.loginMode === 'student' && !isSensei) ? <StudentAttendance session={session} students={students} attendanceRecords={attendanceRecords} /> : <Attendance students={filteredStudents} dojos={dojos} attendanceRecords={attendanceRecords} setAttendanceRecords={setAttendanceRecords} isA={isA} discipline={discipline} />)}
         {active === 'events' && <Events events={filteredEvents} eventType={eventType} setEventType={setEventType} canManage={canManage} setShowEventForm={setShowEventForm} discipline={discipline} />}
         {active === 'fees' && !restrictedSenpai && <Fees students={filteredStudents} session={session} records={feeRecords} setRecords={setFeeRecords} isA={isA} />}
         {active === 'grading' && !restrictedSenpai && <Grading students={filteredStudents} session={session} records={gradingRecords} setRecords={setGradingRecords} canManage={canManage} />}
@@ -150,7 +154,7 @@ function App() {
          {active === 'control' && canManageEverything && <Control isA={isA} isB={isB} students={students} ids={userAccounts} setIds={next => setUserAccounts(prev => { const value = typeof next === 'function' ? next(prev) : next; localStorage.setItem('wwmaa-user-accounts-v10', JSON.stringify(value)); return value })} />}
       </div>
     </main>
-    {showStudentForm && <Modal title="Add student / member profile" close={() => setShowStudentForm(false)}><form className="form-grid" onSubmit={addStudent}><label>Member name<input required value={newStudent.name} onChange={e=>setNewStudent({...newStudent,name:e.target.value})} placeholder="Full name"/></label><label>Member login ID<input required value={newStudent.id} onChange={e=>setNewStudent({...newStudent,id:e.target.value.toUpperCase()})} placeholder="WW-1005"/></label><label>Dojo<select value={newStudent.dojo} onChange={e=>setNewStudent({...newStudent,dojo:e.target.value})}><option>Triprayar Dojo</option><option>Thrissur Central</option><option>Main Dojo</option></select></label><label>Training discipline<select value={newStudent.style} disabled={newStudent.role==='Sensei'} onChange={e=>setNewStudent({...newStudent,style:e.target.value,eventId:''})}>{(newStudent.role==='Sensei'?['All']:['Karate','Kick boxing']).map(d=><option key={d}>{d}</option>)}</select></label><label>Assigned event<select value={newStudent.eventId} onChange={e=>setNewStudent({...newStudent,eventId:e.target.value})}><option value="">No event assigned</option>{events.filter(ev=>newStudent.style==='All'||ev.type===newStudent.style).map(ev=><option key={ev.id} value={ev.id}>{ev.title} · {ev.date}</option>)}</select></label><label>Current belt / level<select value={newStudent.belt} onChange={e=>setNewStudent({...newStudent,belt:e.target.value})}>{['White Belt','Yellow Belt','Orange Belt','Green Belt','Blue Belt','Purple Belt','Brown Belt','Black Belt'].map(x=><option key={x}>{x}</option>)}</select></label><label>Member type<select value={newStudent.role} onChange={e=>setNewStudent({...newStudent,role:e.target.value,style:e.target.value==='Sensei'?'All':(newStudent.style==='All'?'Karate':newStudent.style),eventId:''})}><option>Student</option><option>Senpai</option><option>Sensei</option></select></label><div className="form-actions"><button type="button" className="btn secondary" onClick={()=>setShowStudentForm(false)}>Cancel</button><button className="btn primary"><Plus size={16}/> Add profile</button></div></form></Modal>}
+    {showStudentForm && <Modal title="Add student / member profile" close={() => setShowStudentForm(false)}><form className="form-grid" onSubmit={addStudent}><label>Member name<input required value={newStudent.name} onChange={e=>setNewStudent({...newStudent,name:e.target.value})} placeholder="Full name"/></label><label>Member login ID<input required value={newStudent.id} onChange={e=>setNewStudent({...newStudent,id:e.target.value.toUpperCase()})} placeholder="WW-1005"/></label><label>Dojo<select value={newStudent.dojo} onChange={e=>setNewStudent({...newStudent,dojo:e.target.value})}><option value=''>No dojo assigned</option>{dojos.map(d=><option key={d.id||d.name} value={d.name}>{d.name}</option>)}</select></label><label>Training discipline<select value={newStudent.style} disabled={newStudent.role==='Sensei'} onChange={e=>setNewStudent({...newStudent,style:e.target.value,eventId:''})}>{(newStudent.role==='Sensei'?['All']:['Karate','Kick boxing']).map(d=><option key={d}>{d}</option>)}</select></label><label>Assigned event<select value={newStudent.eventId} onChange={e=>setNewStudent({...newStudent,eventId:e.target.value})}><option value="">No event assigned</option>{events.filter(ev=>newStudent.style==='All'||ev.type===newStudent.style).map(ev=><option key={ev.id} value={ev.id}>{ev.title} · {ev.date}</option>)}</select></label><label>Current belt / level<select value={newStudent.belt} onChange={e=>setNewStudent({...newStudent,belt:e.target.value})}>{['White Belt','Yellow Belt','Orange Belt','Green Belt','Blue Belt','Purple Belt','Brown Belt','Black Belt'].map(x=><option key={x}>{x}</option>)}</select></label><label>Member type<select value={newStudent.role} onChange={e=>setNewStudent({...newStudent,role:e.target.value,style:e.target.value==='Sensei'?'All':(newStudent.style==='All'?'Karate':newStudent.style),eventId:''})}><option>Student</option><option>Senpai</option><option>Sensei</option></select></label><div className="form-actions"><button type="button" className="btn secondary" onClick={()=>setShowStudentForm(false)}>Cancel</button><button className="btn primary"><Plus size={16}/> Add profile</button></div></form></Modal>}
     {showEventForm && <Modal title="Create association event" close={() => setShowEventForm(false)}><form className="form-grid" onSubmit={addEvent}><label>Event name<input required value={newEvent.title} onChange={e=>setNewEvent({...newEvent,title:e.target.value})} placeholder="Training session"/></label><label>Event type<select value={newEvent.type} onChange={e=>setNewEvent({...newEvent,type:e.target.value})}><option>Karate</option><option>Kick boxing</option></select></label><label>Date<input type="date" required value={newEvent.date} onChange={e=>setNewEvent({...newEvent,date:e.target.value})}/></label><label>Time<input value={newEvent.time} onChange={e=>setNewEvent({...newEvent,time:e.target.value})} placeholder="07:00 AM"/></label><label>Dojo / venue<input value={newEvent.place} onChange={e=>setNewEvent({...newEvent,place:e.target.value})}/></label><div className="form-actions"><button type="button" className="btn secondary" onClick={()=>setShowEventForm(false)}>Cancel</button><button className="btn primary"><Plus size={16}/> Create event</button></div></form></Modal>}
   </div>
 }
@@ -158,14 +162,14 @@ function App() {
 function Login({login,loginId,setLoginId,passcode,setPasscode,previewRole,setPreviewRole,loginMode,setLoginMode,notice,rememberMe,setRememberMe}) {
   return <div className="login-screen"><div className="login-visual"><div className="login-top-brand"><img src="/logo.png" alt="WWMAA crest"/><div><b>WORLD WIDE</b><span>MARTIAL ARTS ASSOCIATION</span></div></div><div className="hero-copy"><div className="eyebrow"><span/> DISCIPLINE · RESPECT · COURAGE</div><h1>FORGED BY<br/><em>DISCIPLINE.</em></h1><p>ONE ASSOCIATION. ONE SPIRIT. A LIFETIME OF MASTERY.</p><div className="hero-stats"><div><b>1983</b><span>Since</span></div><i/><div><b>01</b><span>Association</span></div><i/><div><b>∞</b><span>Possibilities</span></div></div></div><div className="brush-mark">武 道</div><div className="login-footer">WORLD WIDE MARTIAL ARTS ASSOCIATION <span>•</span> BUILT ON DISCIPLINE</div></div><div className="login-panel"><div className="mobile-crest"><img src="/logo.png" alt="WWMAA crest"/></div><div className="login-card"><div className="login-heading"><div className="mini-icon"><KeyRound size={20}/></div><div className="eyebrow">{loginMode === 'student' ? 'STUDENT & INSTRUCTOR ACCESS' : 'ADMINISTRATOR ACCESS'}</div><h2>{loginMode === 'student' ? 'Welcome, warrior.' : 'Welcome back.'}</h2><p>{loginMode === 'student' ? 'Sign in to view your profile, training and events.' : 'Sign in to manage the association portal.'}</p></div>
     <div className="login-mode-tabs"><button type="button" className={loginMode==='student'?'selected':''} onClick={()=>{setLoginMode('student');setNotice('')}}><Users size={15}/> Student / Senpai / Sensei</button><button type="button" className={loginMode==='admin'?'selected':''} onClick={()=>{setLoginMode('admin');setNotice('')}}><Shield size={15}/> Admin login</button></div>
-    <form onSubmit={login}><label className="field-label">STUDENT / SENPAI / SENSEI ID<div className="input-wrap"><UserRound size={18}/><input autoComplete="username" value={loginId} onChange={e=>setLoginId(e.target.value)} placeholder="Enter your association ID" required/></div></label><label className="field-label">PASSCODE<div className="input-wrap"><KeyRound size={18}/><input autoComplete="current-password" type="password" value={passcode} onChange={e=>setPasscode(e.target.value)} placeholder="Enter passcode" required/></div></label> {loginMode === 'admin' && <label className="field-label">ADMIN ACCESS LEVEL<select className="role-select" value={previewRole} onChange={e=>setPreviewRole(e.target.value)}><option>A Level</option><option>B Level</option></select></label>}<label className="remember-device"><input type="checkbox" checked={rememberMe} onChange={e=>setRememberMe(e.target.checked)}/><span><b>Remember me on this device</b><small>Stay signed in when you reopen this website on this browser.</small></span></label><button className="btn primary login-submit">Enter member portal <ChevronRight size={18}/></button>{notice && <div className="error-msg">{notice}</div>}</form><div className="login-note"><Shield size={15}/><span>{loginMode === 'student' ? 'Student, Senpai and Sensei accounts use the separate member sign-in.' : 'Administrator accounts only. A and B levels can manage association accounts and passwords.'}</span></div><div className="demo-warning">V13 PREVIEW · DISCIPLINE-AWARE ASSOCIATION SUITE</div></div><div className="panel-bottom">© World Wide Martial Arts Association <span>•</span> Since 1983</div></div></div>
+    <form onSubmit={login}><label className="field-label">STUDENT / SENPAI / SENSEI ID<div className="input-wrap"><UserRound size={18}/><input autoComplete="username" value={loginId} onChange={e=>setLoginId(e.target.value)} placeholder="Enter your association ID" required/></div></label><label className="field-label">PASSCODE<div className="input-wrap"><KeyRound size={18}/><input autoComplete="current-password" type="password" value={passcode} onChange={e=>setPasscode(e.target.value)} placeholder="Enter passcode" required/></div></label> {loginMode === 'admin' && <label className="field-label">ADMIN ACCESS LEVEL<select className="role-select" value={previewRole} onChange={e=>setPreviewRole(e.target.value)}><option>A Level</option><option>B Level</option></select></label>}<label className="remember-device"><input type="checkbox" checked={rememberMe} onChange={e=>setRememberMe(e.target.checked)}/><span><b>Remember me on this device</b><small>Stay signed in when you reopen this website on this browser.</small></span></label><button className="btn primary login-submit">Enter member portal <ChevronRight size={18}/></button>{notice && <div className="error-msg">{notice}</div>}</form><div className="login-note"><Shield size={15}/><span>{loginMode === 'student' ? 'Student, Senpai and Sensei accounts use the separate member sign-in.' : 'Administrator accounts only. A and B levels can manage association accounts and passwords.'}</span></div><div className="demo-warning">WWMAA MEMBER PORTAL · DISCIPLINE-AWARE ACCESS</div></div><div className="panel-bottom">© World Wide Martial Arts Association <span>•</span> Since 1983</div></div></div>
 }
 
 function PageTitle({eyebrow,title,description,action}) { return <div className="page-title-row"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{action}</div> }
-function Overview({role,students,events,setActive}) {
+function Overview({role,students,events,dojos=[],setActive}) {
   return <><PageTitle eyebrow="ASSOCIATION OVERVIEW" title="The warrior's hub." description="Every dojo connected. Every session counted. Every member moving forward." action={<div className="today-chip"><CalendarDays size={16}/> {new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</div>}/>
     <div className="welcome-banner"><div className="banner-text"><span className="banner-kicker">WORLD WIDE MARTIAL ARTS ASSOCIATION</span><h2>ONE TEAM.<br/><em>NO LIMITS.</em></h2><p>Respect the art. Defend the team. Earn every next level.</p><button className="btn light" onClick={()=>setActive('events')}>Explore upcoming events <ChevronRight size={16}/></button></div><div className="banner-symbol">武</div><div className="banner-lines"/></div>
-    <div className="stats-grid"><Stat icon={Users} label="Registered members" value={students.length.toString().padStart(2,'0')} note="Association directory" /><Stat icon={CalendarDays} label="Upcoming events" value={events.length.toString().padStart(2,'0')} note="Karate & kick boxing" /><Stat icon={MapPin} label="Active dojos" value="03" note="Training locations" /><Stat icon={Trophy} label="Your access" value={role==='A Level'?'A':role==='B Level'?'B':'MEMBER'} note={role==='A Level'?'Full control':'Member workspace'} /></div>
+    <div className="stats-grid"><Stat icon={Users} label="Registered members" value={students.length.toString().padStart(2,'0')} note="Association directory" /><Stat icon={CalendarDays} label="Upcoming events" value={events.length.toString().padStart(2,'0')} note="Karate & kick boxing" /><Stat icon={MapPin} label="Active dojos" value={dojos.length.toString().padStart(2,'0')} note="Training locations" /><Stat icon={Trophy} label="Your access" value={role==='A Level'?'A':role==='B Level'?'B':'MEMBER'} note={role==='A Level'?'Full control':'Member workspace'} /></div>
     <div className="section-heading"><div><h2>Coming up</h2><p>Upcoming association activities</p></div><button className="text-btn" onClick={()=>setActive('events')}>View all <ChevronRight size={15}/></button></div><div className="event-grid">{events.slice(0,3).map(e=><EventCard key={e.id} event={e}/>)}</div>
     <div className="fight-strip"><div className="fight-mark">WW<span>MAA</span></div><div><small>THE ASSOCIATION CODE</small><h2>RESPECT THE ROOTS. <em>OWN THE FUTURE.</em></h2><p>Karate spirit · Kick boxing power · One association family</p></div><span className="fight-kanji">武道</span></div><div className="section-heading"><div><h2>Association values</h2><p>The foundation of every practice</p></div></div><div className="values-grid"><Value n="01" title="Respect" text="Honor your instructors, teammates and the art."/><Value n="02" title="Discipline" text="Consistency builds confidence and capability."/><Value n="03" title="Courage" text="Grow through challenge, together as one team."/></div>
   </>
@@ -187,14 +191,14 @@ function StudentAttendance({session,students,attendanceRecords}) {
   return <><PageTitle eyebrow="MY TRAINING" title="Attendance record." description="Your recorded attendance by dojo and training date."/><div className="stats-grid"><Stat icon={ClipboardCheck} label="Sessions recorded" value={rows.length.toString().padStart(2,'0')} note={dojo||'Assigned dojo'}/><Stat icon={Check} label="Present" value={present.toString().padStart(2,'0')} note="Recorded sessions"/><Stat icon={MapPin} label="Assigned dojo" value={dojo||'—'} note="Attendance is dojo-based"/></div><div className="panel"><div className="panel-toolbar"><div><h2>My attendance history</h2><p>Member ID: {session.id} · {dojo||'Dojo not assigned'}</p></div><span className="demo-tag">LOCAL RECORDS</span></div><div className="table-wrap"><table><thead><tr><th>DATE</th><th>DOJO</th><th>DISCIPLINE</th><th>STATUS</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td>{r.date}</td><td>{r.dojo}</td><td>{r.discipline}</td><td><span className={`attendance-status ${r.statuses[session.id].toLowerCase()}`}>{r.statuses[session.id]}</span></td></tr>)}</tbody></table>{!rows.length&&<div className="empty-state"><ClipboardCheck size={25}/><p>No attendance records have been saved for your account yet.</p></div>}</div></div></>
 }
 
-function Attendance({students,attendanceRecords,setAttendanceRecords,isA,discipline='All'}) {
+function Attendance({students,dojos:dojoRecords=[],attendanceRecords,setAttendanceRecords,isA,discipline='All'}) {
   const today = new Date().toISOString().slice(0,10)
-  const [dojo,setDojo] = useState('Triprayar Dojo')
+  const [dojo,setDojo] = useState('')
   const [date,setDate] = useState(today)
   const [trainingDiscipline,setTrainingDiscipline] = useState(discipline==='All'?'Karate':discipline)
   const [marked,setMarked] = useState({})
   const [message,setMessage] = useState('')
-  const dojos = [...new Set([...students.map(s=>s.dojo).filter(Boolean),'Triprayar Dojo','Thrissur Central','Main Dojo'])]
+  const dojos = [...new Set([...dojoRecords.map(d=>d.name).filter(Boolean), ...students.map(s=>s.dojo).filter(Boolean)])]
   const dojoStudents = students.filter(s=>s.dojo===dojo && (s.style || 'Karate').toLowerCase()===trainingDiscipline.toLowerCase())
   const current = attendanceRecords.find(r=>r.date===date && r.dojo===dojo && r.discipline===trainingDiscipline)
   React.useEffect(()=>{setMarked(current?.statuses || {});setMessage('')},[date,dojo,trainingDiscipline,attendanceRecords])
@@ -206,7 +210,7 @@ function Attendance({students,attendanceRecords,setAttendanceRecords,isA,discipl
   }
   function deleteRecord(record){if(!isA)return;const next=attendanceRecords.filter(r=>r.id!==record.id);setAttendanceRecords(next);localStorage.setItem('wwmaa-attendance-v10',JSON.stringify(next));setMessage(`Attendance record for ${record.date} deleted.`)}
   return <><PageTitle eyebrow="TRAINING RECORDS" title="Dojo attendance." description="Record attendance separately for each dojo, date and discipline. Select a past date to correct an earlier record." action={<div className="today-chip"><CalendarDays size={16}/>{new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>}/>
-    <div className="panel attendance-editor"><div className="panel-toolbar"><div><h2>Session setup</h2><p>Choose the dojo and date before marking the roll call.</p></div><span className="demo-tag">BROWSER-SAVED</span></div><div className="attendance-filters"><label>Dojo<select value={dojo} onChange={e=>setDojo(e.target.value)}>{dojos.map(d=><option key={d}>{d}</option>)}</select></label><label>Training date <input type="date" value={date} onChange={e=>setDate(e.target.value)} max="2099-12-31"/></label><label>Discipline<select value={trainingDiscipline} onChange={e=>setTrainingDiscipline(e.target.value)}>{(discipline==='All'?['Karate','Kick boxing']:[discipline]).map(d=><option key={d}>{d}</option>)}</select></label></div><div className="attendance-banner"><ClipboardCheck size={24}/><div><b>{dojo} · {trainingDiscipline}</b><p>{date===today?'Today’s session':`Session date: ${date}`}{current?' · Existing record loaded for editing':' · New session'}</p></div><span>{Object.values(marked).filter(v=>v==='Present').length}/{dojoStudents.length} present</span></div>
+    <div className="panel attendance-editor"><div className="panel-toolbar"><div><h2>Session setup</h2><p>Choose the dojo and date before marking the roll call.</p></div><span className="demo-tag">BROWSER-SAVED</span></div><div className="attendance-filters"><label>Dojo<select value={dojo} onChange={e=>setDojo(e.target.value)}><option value=''>Select a dojo</option>{dojos.map(d=><option key={d} value={d}>{d}</option>)}</select></label><label>Training date <input type="date" value={date} onChange={e=>setDate(e.target.value)} max="2099-12-31"/></label><label>Discipline<select value={trainingDiscipline} onChange={e=>setTrainingDiscipline(e.target.value)}>{(discipline==='All'?['Karate','Kick boxing']:[discipline]).map(d=><option key={d}>{d}</option>)}</select></label></div><div className="attendance-banner"><ClipboardCheck size={24}/><div><b>{dojo} · {trainingDiscipline}</b><p>{date===today?'Today’s session':`Session date: ${date}`}{current?' · Existing record loaded for editing':' · New session'}</p></div><span>{Object.values(marked).filter(v=>v==='Present').length}/{dojoStudents.length} present</span></div>
     <div className="panel-toolbar attendance-roll-heading"><div><h2>Member roll call</h2><p>{dojoStudents.length} members assigned to this dojo. Use the status buttons to update each person.</p></div></div><div className="attendance-list">{dojoStudents.map(s=>{const status=marked[s.id]||'Unmarked';return <div className="attendance-row" key={s.id}><div className="member-cell"><span className="member-avatar">{s.name.split(' ').map(x=>x[0]).join('').replace('.','').slice(0,2)}</span><div><b>{s.name}</b><small>{s.id} · {s.belt}</small></div></div><div className="attendance-status-actions">{['Present','Absent','Late'].map(v=><button key={v} className={`attendance-status-btn ${status===v?'selected '+v.toLowerCase():''}`} onClick={()=>setMarked(prev=>({...prev,[s.id]:v}))}>{v}</button>)}</div></div>})}{dojoStudents.length===0&&<div className="empty-state">No member profiles are assigned to this dojo yet.</div>}</div><div className="attendance-save-row"><span>{current?'Editing a saved record':'Creating a new attendance record'}{date!==today?' · Past-date correction enabled':''}</span><button className="btn primary" onClick={saveSession}><Check size={16}/> Save attendance</button></div></div>
     {message&&<div className="notice"><Check size={16}/>{message}<button onClick={()=>setMessage('')}><X size={15}/></button></div>}
     <div className="panel"><div className="panel-toolbar"><div><h2>Previous attendance records</h2><p>History for {dojo}. Click Edit to load a saved date and adjust statuses.</p></div><span className="demo-tag">{history.length} RECORDS</span></div><div className="table-wrap"><table><thead><tr><th>DATE</th><th>DOJO</th><th>DISCIPLINE</th><th>PRESENT</th><th>ABSENT</th><th>LATE</th><th>ACTION</th></tr></thead><tbody>{history.map(r=><tr key={r.id}><td>{r.date}</td><td>{r.dojo}</td><td>{r.discipline}</td><td>{Object.values(r.statuses||{}).filter(v=>v==='Present').length}</td><td>{Object.values(r.statuses||{}).filter(v=>v==='Absent').length}</td><td>{Object.values(r.statuses||{}).filter(v=>v==='Late').length}</td><td><button className="text-btn" onClick={()=>{setDate(r.date);setTrainingDiscipline(r.discipline);setDojo(r.dojo);setMarked(r.statuses||{});setMessage('Past record loaded. Make corrections and save attendance.')}}><Pencil size={13}/> Edit</button>{isA&&<button className="text-btn muted" onClick={()=>deleteRecord(r)}>Delete</button>}</td></tr>)}</tbody></table>{!history.length&&<div className="empty-state">No previous sessions recorded for this dojo.</div>}</div></div>
@@ -231,7 +235,7 @@ function Control({isA,isB,students,ids,setIds}) {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
   const [saved, setSaved] = useState('')
-  const [form, setForm] = useState({id:'',name:'',role:'Student',dojo:'Triprayar Dojo',belt:'White Belt',style:'Karate',password:''})
+  const [form, setForm] = useState({id:'',name:'',role:'Student',dojo:'',belt:'',style:'Karate',password:''})
   const shownIds = ids.filter(x => (x.id+' '+x.name+' '+x.role).toLowerCase().includes(searchId.toLowerCase()))
   const disciplineOptions = ['Sensei','Sensi','A Level','B Level'].includes(form.role) ? ['All'] : ['Karate','Kick boxing']
   const canEdit = (account) => isA || (isB && account.role === 'Senpai')
@@ -243,6 +247,8 @@ function Control({isA,isB,students,ids,setIds}) {
   function saveAccount(e) {
     e.preventDefault()
     if (!form.id.trim() || !form.name.trim()) return
+    if (!editing && String(form.password || '').length < 6) { setSaved('Set an initial password of at least 6 characters before creating this account.'); return }
+    if (editing && form.password && String(form.password).length < 6) { setSaved('New passwords must contain at least 6 characters.'); return }
     if (editing) {
       const target = ids.find(x => x.id === editing)
       if (!target || !canEdit(target)) return
@@ -250,27 +256,27 @@ function Control({isA,isB,students,ids,setIds}) {
         setSaved('That login ID already exists.'); return
       }
       setIds(prev => prev.map(x => x.id === editing ? {...x, ...form, id:form.id.trim().toUpperCase(), passwordSet: form.password ? true : x.passwordSet, ...(form.password ? {password:form.password} : {})} : x))
-      setSaved(form.password ? 'Account details saved and new password set in this browser preview.' : 'Account details saved in this browser preview.')
+      setSaved(form.password ? 'Account details and password updated in this browser.' : 'Account details updated in this browser.')
     } else {
       if (!isA) return
       if (ids.some(x => x.id.toLowerCase() === form.id.trim().toLowerCase())) { setSaved('That login ID already exists.'); return }
       setIds(prev => [...prev, {...form, id:form.id.trim().toUpperCase(), status:'Active', passwordSet:!!form.password}])
-      setSaved('Account created in this browser preview.')
+      setSaved('Account created. You can sign in with this ID and initial password on this same browser.')
     }
     setEditing(null); setShowForm(false)
-    setForm({id:'',name:'',role:'Student',dojo:'Triprayar Dojo',belt:'White Belt',style:'Karate',password:''})
+    setForm({id:'',name:'',role:'Student',dojo:'',belt:'',style:'Karate',password:''})
   }
   function removeAccount(account) {
     if (!isA || account.role === 'A Level' && account.id === 'WWMAA-ADMIN-001') return
     setIds(prev => prev.filter(x => x.id !== account.id))
-    setSaved('Account removed in this browser preview.')
+    setSaved('Account removed from this browser.')
   }
   return <>
     <PageTitle eyebrow="ADMINISTRATION" title="User control panel." description={isA ? 'A Level can manage every user and administrator account, IDs, roles and password resets.' : 'B Level access is limited to editing Senpai accounts only.'} />
     <div className="control-alert"><Shield size={20}/><div><b>{isA?'A Level · Full user control':'B Level · Senpai-only editing'}</b><p>{isA?'Edit all member and admin details, create accounts, change login IDs and roles, and set a new password when required. Set a separate password for each account; existing passwords are never shown.':'You can edit Senpai account details only. Other members and administrator accounts are read-only. You cannot create admin accounts or change roles.'}</p></div></div>
     {saved && <div className="notice"><Check size={16}/>{saved}<button onClick={()=>setSaved('')}><X size={15}/></button></div>}
     <div className="panel control-section">
-      <div className="panel-toolbar"><div><h2>All user accounts</h2><p>{shownIds.length} accounts · starter accounts come from <code>src/users.json</code>; saved browser accounts use this V10 version</p></div>{isA&&<button className="btn primary" onClick={()=>{setEditing(null);setForm({id:'',name:'',role:'Student',dojo:'Triprayar Dojo',belt:'White Belt',style:'Karate',password:''});setShowForm(!showForm)}}><Plus size={16}/>{showForm?'Close form':'Create account'}</button>}</div>
+      <div className="panel-toolbar"><div><h2>All user accounts</h2><p>{shownIds.length} accounts · new accounts are saved in this browser</p></div>{isA&&<button className="btn primary" onClick={()=>{setEditing(null);setForm({id:'',name:'',role:'Student',dojo:'',belt:'',style:'Karate',password:''});setShowForm(!showForm)}}><Plus size={16}/>{showForm?'Close form':'Create account'}</button>}</div>
       {(showForm || editing) && <form className="form-grid control-form" onSubmit={saveAccount}>
         <label>Login ID<input required value={form.id} onChange={e=>setForm({...form,id:e.target.value})} placeholder="WW-1005" disabled={!!editing && isB}/></label>
         <label>Full name<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Full name"/></label>
@@ -278,14 +284,14 @@ function Control({isA,isB,students,ids,setIds}) {
         <label>Dojo<input value={form.dojo||''} onChange={e=>setForm({...form,dojo:e.target.value})}/></label>
         <label>Belt<input value={form.belt||''} onChange={e=>setForm({...form,belt:e.target.value})}/></label>
         <label>Discipline<select value={form.style||'Karate'} onChange={e=>setForm({...form,style:e.target.value})}>{disciplineOptions.map(d=><option key={d}>{d}</option>)}</select></label>
-        {isA && <label>{editing?'Set new password (optional)':'Initial password'}<input type="password" value={form.password||''} onChange={e=>setForm({...form,password:e.target.value})} placeholder={editing?'Leave blank to keep unchanged':'Set initial password'} autoComplete="new-password"/></label>}
+        {isA && <label>{editing?'Set new password (optional)':'Initial password'}<input type="password" value={form.password||''} onChange={e=>setForm({...form,password:e.target.value})} placeholder={editing?'Leave blank to keep unchanged':'At least 6 characters'} autoComplete="new-password" minLength={6} required={!editing}/></label>}
         <div className="form-actions"><button type="button" className="btn secondary" onClick={()=>{setEditing(null);setShowForm(false)}}>Cancel</button><button className="btn primary"><Check size={16}/>{editing?'Save account':'Create account'}</button></div>
       </form>}
-      <div className="panel-toolbar id-search-toolbar"><div className="search-box"><Search size={17}/><input value={searchId} onChange={e=>setSearchId(e.target.value)} placeholder="Search name, ID, role..."/></div><span className="demo-tag">FRONTEND PREVIEW</span></div>
+      <div className="panel-toolbar id-search-toolbar"><div className="search-box"><Search size={17}/><input value={searchId} onChange={e=>setSearchId(e.target.value)} placeholder="Search name, ID, role..."/></div><span className="demo-tag">LOCAL ACCOUNT STORAGE</span></div>
       <div className="table-wrap"><table><thead><tr><th>NAME</th><th>LOGIN ID</th><th>ROLE</th><th>DOJO</th><th>BELT</th><th>PASSWORD</th><th>ACTIONS</th></tr></thead><tbody>{shownIds.map(x=><tr key={x.id}><td>{x.name}</td><td><span className="id-chip">{x.id}</span></td><td><span className="access-chip">{x.role}</span></td><td>{x.dojo||'—'}</td><td>{x.belt||'—'}</td><td><span className="access-chip">{x.passwordSet?'Set':'Not set'}</span></td><td>{canEdit(x)?<div className="row-actions"><button className="text-btn" onClick={()=>beginEdit(x)}><Pencil size={13}/> Edit</button>{isA&&<button className="text-btn muted" onClick={()=>removeAccount(x)}>Delete</button>}</div>:<span className="muted">View only</span>}</td></tr>)}</tbody></table>{shownIds.length===0&&<div className="empty-state">No accounts match your search.</div>}</div>
     </div>
     <div className="panel security-panel"><div className="security-icon"><KeyRound size={20}/></div><div><h3>Password management</h3><p>A Level can set a new password for any account, but cannot view an existing password. B Level can edit Senpai details only and has no password-management controls in this preview. For a public site, passwords and permissions must be enforced by a secure backend.</p></div></div>
-    <div className="panel security-panel"><div className="security-icon"><CircleHelp size={20}/></div><div><h3>How to edit users easily</h3><p>Open <b>src/users.json</b> in VS Code or Notepad to edit starter IDs, roles and each account's individual password, then rebuild/redeploy. V10 uses a new browser-storage key so stale V6/V7 account data will not override the starter accounts. Password changes made in this browser preview update this browser's local account list and work for subsequent logins on this browser only; they do not update the source file or sync to other devices.</p></div></div>
+    <div className="panel security-panel"><div className="security-icon"><CircleHelp size={20}/></div><div><h3>How to edit users easily</h3><p>Use the A Level Control Panel to create accounts. A new account requires an initial password of at least 6 characters. Accounts created in the control panel are saved in this browser only; they are not synced to other devices until secure backend authentication is connected.</p></div></div>
   </>
 }
 
@@ -297,7 +303,7 @@ function Fees({students,session,records,setRecords,isA}) {
   const [filter,setFilter]=useState('All')
   const [sortBy,setSortBy]=useState('Status')
   const visible=records.filter(r => ((session.loginMode!=='student'||['Sensei','Sensi'].includes(session.role)) || r.memberId===session.id) && (filter==='All'||(filter==='Unpaid'&&['Due','Unpaid'].includes(r.status))||r.status===filter) && (month==='Any month'||r.month===month)).sort((a,b)=>sortBy==='Status'?(['Unpaid','Due','Paid','Waived'].indexOf(a.status)-['Unpaid','Due','Paid','Waived'].indexOf(b.status)):sortBy==='Name'?a.name.localeCompare(b.name):sortBy==='Amount'?Number(b.amount)-Number(a.amount):sortBy==='Month'?String(b.month).localeCompare(String(a.month)):a.name.localeCompare(b.name))
-  function add(e){e.preventDefault();const who=students.find(s=>s.id===member)||{id:member,name:session.name,dojo:session.dojo||'Triprayar Dojo'};if(!who.id)return;const rec={id:Date.now(),memberId:who.id,name:who.name,dojo:who.dojo,month,amount:Number(amount),note,status:'Due',paidAt:'Not paid yet'};const next=[rec,...records];setRecords(next);localStorage.setItem('wwmaa-fees-v10',JSON.stringify(next))}
+  function add(e){e.preventDefault();const who=students.find(s=>s.id===member)||{id:member,name:session.name,dojo:session.dojo||''};if(!who.id)return;const rec={id:Date.now(),memberId:who.id,name:who.name,dojo:who.dojo,month,amount:Number(amount),note,status:'Due',paidAt:'Not paid yet'};const next=[rec,...records];setRecords(next);localStorage.setItem('wwmaa-fees-v10',JSON.stringify(next))}
   function statusChange(id,status){const next=records.map(r=>r.id===id?{...r,status}:r);setRecords(next);localStorage.setItem('wwmaa-fees-v10',JSON.stringify(next))}
   return <><PageTitle eyebrow="MEMBERSHIP FINANCE" title="Fees & payments." description="Track monthly training fees, dues and payment history by member and dojo." action={<span className="today-chip"><Receipt size={16}/> ₹{visible.filter(r=>r.status==='Paid').reduce((a,r)=>a+r.amount,0).toLocaleString('en-IN')} collected</span>}/>
   {isA&&<form className="panel form-grid feature-form" onSubmit={add}><label>Member<select required value={member} onChange={e=>setMember(e.target.value)}><option value="">Select member</option>{students.map(s=><option value={s.id} key={s.id}>{s.name} · {s.id}</option>)}</select></label><label>Fee month<input type="month" value={month} onChange={e=>setMonth(e.target.value)} required/></label><label>Amount (₹)<input type="number" min="0" value={amount} onChange={e=>setAmount(e.target.value)} required/></label><label>Note<input value={note} onChange={e=>setNote(e.target.value)} placeholder="Monthly fee / registration"/></label><div className="form-actions"><button className="btn primary"><Plus size={16}/> Record payment</button></div></form>}

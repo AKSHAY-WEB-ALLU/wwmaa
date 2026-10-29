@@ -1,15 +1,6 @@
-WWMAA V10 USER EDIT GUIDE
+WWMAA USER ACCOUNT GUIDE
 
-STARTER ACCOUNTS
-Open src/users.json in VS Code or Notepad. Each account has its own ID, password, role, dojo and style.
+Use the A Level Control Panel to create, edit, disable, and delete member accounts.
+When creating an account, set a unique Login ID and an initial password of at least 6 characters. The form blocks account creation if the initial password is missing. The new account can then use the Student / Senpai / Sensei login tab with that ID and password.
 
-STYLE VALUES
-- Karate: account sees Karate information.
-- Kick boxing: account sees Kick boxing information.
-- All: used for Sensei and administrator accounts that are allowed to view both disciplines.
-
-CONTROL PANEL
-A Level can create accounts, assign their role and discipline, and set a unique initial password or reset one later. B Level is limited to editing Senpai accounts. In this frontend preview, changes made through the Control panel are saved in the current browser and do not rewrite src/users.json.
-
-SECURITY WARNING
-The passwords in src/users.json are demo credentials only. Anyone who downloads the source can read them. Before public launch, replace this demo login with Supabase Auth or another secure backend, and enforce role and discipline access in database/server policies.
+Important limitation: this version stores account records in browser localStorage. It works only in the same browser profile/device where the account was created; it does not synchronize to other devices. The current client-side authentication is not secure enough for real sensitive data. For a public production portal, migrate sign-in and account administration to Supabase Auth with server-side role checks before using real member data.

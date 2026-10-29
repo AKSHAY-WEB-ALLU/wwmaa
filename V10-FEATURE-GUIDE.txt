@@ -31,4 +31,4 @@ WWMAA V10 FEATURE GUIDE
    Run npm install, then npm run dev, from the folder containing package.json.
 
 IMPORTANT
-This is a frontend prototype, not secure production authentication. Passwords in src/users.json are demo credentials. Browser-local records do not synchronize between devices and are not secure against tampering. Use Supabase or another backend with server-side authentication and access policies before publishing publicly.
+This is a frontend prototype, not secure production authentication. The retained A/B administrator bootstrap entries in src/users.json are client-side credentials and are not secure. Browser-local records do not synchronize between devices and are not secure against tampering. Use Supabase or another backend with server-side authentication and access policies before publishing publicly.
