@@ -1,0 +1,34 @@
+WWMAA COMPLETE WEBSITE REPLACEMENT ZIP
+
+This archive contains the complete tracked website source from your uploaded
+WWMAA repository, with the broken dependency manifest corrected for Vercel.
+
+IMPORTANT: node_modules and the old package-lock.json are intentionally omitted.
+The old lockfile belonged to the broken Supabase-only manifest. npm will create
+an accurate new package-lock.json when dependencies are installed.
+
+HOW TO USE
+1. Extract this ZIP.
+2. Open the extracted folder. It contains index.html, package.json, src/, public/,
+   supabase/, docs/, and the other website files.
+3. Copy ALL extracted contents into the ROOT of your existing local WWMAA repo,
+   replacing files when prompted. Do not create a nested wwmaa-main/ folder inside
+   your repository.
+4. Open a terminal in the repository root and run:
+      npm install
+      npm run build
+5. If `npm run build` succeeds, commit and push the changed files to the existing
+   AKSHAY-WEB-ALLU/wwmaa repository. Include package.json and the newly generated
+   package-lock.json. Do NOT commit node_modules or dist.
+6. Vercel should redeploy from main. Build command is npm run build and output is dist.
+
+WHAT THIS FIXES
+The uploaded repository's package.json only declared @supabase/supabase-js, even
+though the website imports React, React DOM, lucide-react, Vite and the Vite React
+plugin. This corrected package.json declares those packages and the build scripts.
+
+SCOPE NOTE
+This is a full source replacement ZIP and a Vercel build fix. It preserves the
+existing website features and does not claim that Supabase real-time syncing is
+already connected to all website data. The existing app still uses localStorage
+for much of its data until that separate integration is completed.
